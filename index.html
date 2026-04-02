@@ -1,49 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>반 관리 앱</title>
 <style>
-  /* 보기 좋게 약간의 간격을 추가했습니다 */
-  .filter-section { margin-bottom: 10px; padding: 10px; background: #eee; border-radius: 5px; display: inline-block; }
+  /* 📱 모바일 앱 느낌을 주는 기본 스타일 */
+  body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: #f4f4f9; }
+  
+  /* 윗부분 제목 (헤더) */
+  .header { background-color: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; }
+
+  /* 탭 메뉴 스타일 */
+  .tab-menu { display: flex; background-color: #333; }
+  .tab-btn { flex: 1; padding: 15px; background: none; color: white; border: none; font-size: 16px; cursor: pointer; transition: 0.3s; }
+  .tab-btn.active { background-color: #4CAF50; font-weight: bold; border-bottom: 4px solid #fff; }
+
+  /* 각 기능이 들어갈 화면 (처음엔 숨김) */
+  .app-section { display: none; padding: 20px; }
+  /* active 클래스가 붙은 화면만 보여줌 */
+  .app-section.active { display: block; }
+
+  /* 입력창 및 버튼 디자인 조금 다듬기 */
+  input { width: 100%; padding: 10px; margin: 5px 0 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+  button.action-btn { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  ul { padding: 0; list-style-type: none; }
+  li { background: white; margin: 5px 0; padding: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+  .delete-btn { background-color: #ff4b2b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<h2>점수 관리</h2>
+<div class="header">스마트 반 관리 앱</div>
 
-<select id="scoreCategory">
-  <option value="국어">국어</option>
-  <option value="영어">영어</option>
-  <option value="수학">수학</option>
-  <option value="기타">기타</option>
-</select>
-<input id="name" placeholder="이름">
-<input id="score" type="number" placeholder="점수">
-<button onclick="addScore()">추가</button>
-
-<hr>
-
-<div class="filter-section">
-  <label>과목별 보기: </label>
-  <select id="filterCategory" onchange="renderScores()">
-    <option value="all">전체 보기</option>
-    <option value="국어">국어</option>
-    <option value="영어">영어</option>
-    <option value="수학">수학</option>
-    <option value="기타">기타</option>
-  </select>
+<div class="tab-menu">
+  <button class="tab-btn active" onclick="switchTab('score-section', this)">💯 점수 관리</button>
+  <button class="tab-btn" onclick="switchTab('event-section', this)">📅 일정 관리</button>
 </div>
 
-<ul id="scoreList"></ul>
+<div id="score-section" class="app-section active">
+  <h3>점수 추가하기</h3>
+  <input id="name" placeholder="학생 이름">
+  <input id="score" type="number" placeholder="점수 입력">
+  <button class="action-btn" onclick="addScore()">점수 추가</button>
 
-<hr>
+  <h3>우리 반 점수 목록</h3>
+  <ul id="scoreList"></ul>
+</div>
 
-<h2>일정 관리</h2>
-<input type="date" id="eventDate">
-<input type="text" id="eventText" placeholder="일정 내용">
-<button onclick="addEvent()">추가</button>
-<ul id="eventList"></ul>
+<div id="event-section" class="app-section">
+  <h3>일정 추가하기</h3>
+  <input type="date" id="eventDate">
+  <input type="text" id="eventText" placeholder="수행평가, 소풍 등 내용 입력">
+  <button class="action-btn" onclick="addEvent()">일정 추가</button>
+
+  <h3>다가오는 일정</h3>
+  <ul id="eventList"></ul>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -62,72 +75,57 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
 const scoreRef = ref(db, "scores");
 const eventRef = ref(db, "events");
 
-// --- 점수 관리 기능 ---
+// --- 📱 화면(탭) 전환 함수 ---
+window.switchTab = function(sectionId, btnElement) {
+  // 1. 모든 화면 숨기기
+  document.querySelectorAll('.app-section').forEach(section => {
+    section.classList.remove('active');
+  });
+  // 2. 모든 탭 버튼 색상 원래대로 돌리기
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // 3. 클릭한 화면만 보여주고, 클릭한 버튼만 강조하기
+  document.getElementById(sectionId).classList.add('active');
+  btnElement.classList.add('active');
+}
 
-// 데이터를 임시로 담아둘 배열 (필터링을 위해 필요함)
-let allScores = []; 
-
-// 🔹 점수 추가
+// --- 점수 관리 로직 ---
 window.addScore = function() {
-  const category = document.getElementById("scoreCategory").value; // 카테고리 값 가져오기
   const name = document.getElementById("name").value;
   const score = document.getElementById("score").value;
-
-  // DB에 카테고리 정보도 같이 push
-  push(scoreRef, {
-    category: category, 
-    name: name,
-    score: score
-  });
+  if(!name || !score) return alert("이름과 점수를 입력해주세요.");
+  push(scoreRef, { name: name, score: score });
+  document.getElementById("name").value = "";
+  document.getElementById("score").value = "";
 }
 
-// 🔹 점수 실시간 불러오기 (DB에서 데이터를 가져와 배열에 저장)
 onValue(scoreRef, (snapshot) => {
-  allScores = []; // 배열 초기화
+  const list = document.getElementById("scoreList");
+  list.innerHTML = "";
   snapshot.forEach(child => {
-    // 키값과 데이터를 합쳐서 배열에 넣음
-    allScores.push({ key: child.key, ...child.val() }); 
+    const li = document.createElement("li");
+    li.innerHTML = `<span><b>${child.val().name}</b>: ${child.val().score}점</span> 
+                    <button class='delete-btn' onclick='deleteScore("${child.key}")'>삭제</button>`;
+    list.appendChild(li);
   });
-  window.renderScores(); // 데이터베이스가 바뀌면 화면을 다시 그림
 });
 
-// 🔹 필터에 맞게 화면에 그리기 (새로 추가된 핵심 함수)
-window.renderScores = function() {
-  const filterVal = document.getElementById("filterCategory").value; // 뭘 선택했는지 확인
-  const list = document.getElementById("scoreList");
-  list.innerHTML = ""; // 일단 화면 싹 지우기
-
-  allScores.forEach(data => {
-    // '전체보기' 이거나, 데이터의 카테고리가 선택한 필터와 같을 때만 화면에 추가
-    if (filterVal === "all" || data.category === filterVal) {
-      const li = document.createElement("li");
-      
-      // 기존 데이터에 카테고리가 없을 수도 있으니 안전하게 처리
-      const categoryText = data.category ? `[${data.category}]` : "[미분류]"; 
-      
-      li.innerHTML = `${categoryText} ${data.name} - ${data.score} 
-      <button onclick='deleteScore("${data.key}")'>삭제</button>`;
-      
-      list.appendChild(li);
-    }
-  });
-}
-
-// 🔹 점수 삭제
 window.deleteScore = function(key) {
   remove(ref(db, "scores/" + key));
 }
 
-
-// --- 일정 관리 기능 (기존과 동일) ---
+// --- 일정 관리 로직 ---
 window.addEvent = function() {
   const date = document.getElementById("eventDate").value;
   const text = document.getElementById("eventText").value;
+  if(!date || !text) return alert("날짜와 내용을 입력해주세요.");
   push(eventRef, { date: date, text: text });
+  document.getElementById("eventText").value = "";
 }
 
 onValue(eventRef, (snapshot) => {
@@ -135,8 +133,8 @@ onValue(eventRef, (snapshot) => {
   list.innerHTML = "";
   snapshot.forEach(child => {
     const li = document.createElement("li");
-    li.innerHTML = child.val().date + " - " + child.val().text +
-    " <button onclick='deleteEvent(\""+child.key+"\")'>삭제</button>";
+    li.innerHTML = `<span><b>${child.val().date}</b> - ${child.val().text}</span> 
+                    <button class='delete-btn' onclick='deleteEvent("${child.key}")'>삭제</button>`;
     list.appendChild(li);
   });
 });
@@ -144,7 +142,6 @@ onValue(eventRef, (snapshot) => {
 window.deleteEvent = function(key) {
   remove(ref(db, "events/" + key));
 }
-
 </script>
 
 </body>
