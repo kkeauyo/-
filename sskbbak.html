@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>반 관리 앱</title>
-
 </head>
 <body>
 
@@ -86,28 +85,25 @@ window.addEvent = function() {
   });
 }
 
-// 🔹 일정 실시간 불러오기
+// 🔹 일정 실시간 불러오기 (수정됨: 삭제 버튼 추가)
 onValue(eventRef, (snapshot) => {
   const list = document.getElementById("eventList");
   list.innerHTML = "";
   snapshot.forEach(child => {
     const li = document.createElement("li");
-    li.textContent = child.val().date + " - " + child.val().text;
+    
+    // 점수 삭제와 똑같이 innerHTML을 사용해 삭제 버튼을 달아줍니다.
+    li.innerHTML = child.val().date + " - " + child.val().text +
+    " <button onclick='deleteEvent(\""+child.key+"\")'>삭제</button>";
+    
     list.appendChild(li);
   });
 });
 
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-
-const auth = getAuth();
-
-createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    console.log("회원가입 성공:", userCredential.user);
-  })
-  .catch((error) => {
-    console.error(error.message);
-  });
+// 🔹 일정 삭제 (새로 추가됨)
+window.deleteEvent = function(key) {
+  remove(ref(db, "events/" + key));
+}
 
 </script>
 
