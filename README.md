@@ -1,2 +1,2 @@
-# -
+# school project
 학교프로젝트 &amp; 테스트
