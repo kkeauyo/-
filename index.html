@@ -8,19 +8,29 @@
   body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: #f4f4f9; }
   .header { background-color: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; }
   
+  /* 상단 탭 메뉴 (홈 버튼 추가) */
   .tab-menu { display: flex; background-color: #333; }
   .tab-btn { flex: 1; padding: 15px; background: none; color: white; border: none; font-size: 16px; cursor: pointer; transition: 0.3s; }
   .tab-btn.active { background-color: #4CAF50; font-weight: bold; border-bottom: 4px solid #fff; }
   
   .app-section { display: none; padding: 20px; }
   .app-section.active { display: block; }
+
+  /* 🔹 메인 메뉴 카드 디자인 */
+  .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 10px; }
+  .menu-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
+  .menu-card:hover { transform: translateY(-5px); border-color: #4CAF50; }
+  .menu-card h3 { margin: 0 0 10px 0; font-size: 22px; color: #333; }
+  .menu-card p { margin: 0; color: #666; font-size: 14px; }
   
+  /* 입력 및 리스트 기본 디자인 */
   input { width: 100%; padding: 10px; margin: 5px 0 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-  button.action-btn { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+  button.action-btn { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; }
   ul { padding: 0; list-style-type: none; }
   li { background: white; margin: 5px 0; padding: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
   .delete-btn { background-color: #ff4b2b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
 
+  /* 달력 디자인 */
   .calendar-wrapper { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 20px; }
   .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   .calendar-header button { padding: 5px 15px; cursor: pointer; border: none; background: #eee; border-radius: 5px; font-weight: bold; }
@@ -28,64 +38,48 @@
   .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
   .calendar-day-name { font-weight: bold; padding: 5px; background: #e0e0e0; border-radius: 5px; font-size: 14px; }
   
-  .calendar-day { padding: 10px 5px; background: #fafafa; border-radius: 5px; border: 1px solid #eee; min-height: 40px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 14px; transition: 0.2s; }
+  .calendar-day { padding: 10px 5px; background: #fafafa; border-radius: 5px; border: 1px solid #eee; min-height: 40px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 14px; }
   .calendar-day.today { border: 2px solid #4CAF50; font-weight: bold; color: #4CAF50; }
-  .calendar-day.has-event { background: #e8f5e9; cursor: pointer; }
-  .calendar-day.has-event:active { background: #c8e6c9; transform: scale(0.95); }
+  .calendar-day.has-event { background: #e8f5e9; }
   
   .event-dot { width: 8px; height: 8px; background: #ff4b2b; border-radius: 50%; margin-top: 3px; }
 
-  /* 🔹 PC 컴퓨터를 위한 커스텀 말풍선(Tooltip) 디자인 */
+  /* PC 말풍선(Tooltip) 유지 */
   .custom-tooltip {
-    visibility: hidden; /* 평소에는 숨김 */
-    background-color: rgba(0, 0, 0, 0.8);
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 6px 10px;
-    position: absolute;
-    z-index: 10;
-    bottom: 110%; /* 날짜 칸 위로 띄움 */
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: pre-wrap; /* 줄바꿈 허용 */
-    width: max-content;
-    max-width: 150px;
-    font-size: 12px;
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none; /* 클릭 방해 금지 */
+    visibility: hidden; background-color: rgba(0, 0, 0, 0.8); color: #fff; text-align: center; border-radius: 6px; padding: 6px 10px; position: absolute; z-index: 10; bottom: 110%; left: 50%; transform: translateX(-50%); white-space: pre-wrap; width: max-content; max-width: 150px; font-size: 12px; opacity: 0; transition: opacity 0.2s; pointer-events: none;
   }
-  
-  /* 말풍선 아래쪽 뾰족한 화살표 부분 */
-  .custom-tooltip::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
-  }
-
-  /* 일정이 있는 날짜에 마우스를 올리면 말풍선 등장! */
-  .calendar-day.has-event:hover .custom-tooltip {
-    visibility: visible;
-    opacity: 1;
-  }
+  .custom-tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent; }
+  .calendar-day.has-event:hover .custom-tooltip { visibility: visible; opacity: 1; }
 </style>
 </head>
 <body>
 
 <div class="header">스마트 반 관리 앱</div>
 
-<div class="tab-menu">
-  <button class="tab-btn active" onclick="switchTab('score-section', this)">💯 점수 관리</button>
-  <button class="tab-btn" onclick="switchTab('event-section', this)">📅 일정 관리</button>
+<div class="tab-menu" id="top-tabs">
+  <button class="tab-btn active" onclick="switchTab('main-section', this)">🏠 홈</button>
+  <button class="tab-btn" onclick="switchTab('score-section', this)">💯 점수</button>
+  <button class="tab-btn" onclick="switchTab('event-section', this)">📅 일정</button>
 </div>
 
-<div id="score-section" class="app-section active">
+<div id="main-section" class="app-section active">
+  <h2 style="color: #333; margin-top: 0;">환영합니다! 👋</h2>
+  <p style="color: #666; margin-bottom: 20px;">무엇을 관리할까요?</p>
+  
+  <div class="menu-grid">
+    <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
+      <h3>💯 점수 관리</h3>
+      <p>우리 반 학생들의 점수를<br>기록하고 관리하세요.</p>
+    </div>
+    
+    <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
+      <h3>📅 일정 관리</h3>
+      <p>수행평가, 학사일정 등을<br>달력으로 한눈에 확인하세요.</p>
+    </div>
+  </div>
+</div>
+
+<div id="score-section" class="app-section">
   <h3>점수 추가하기</h3>
   <input id="name" placeholder="학생 이름">
   <input id="score" type="number" placeholder="점수 입력">
@@ -134,6 +128,7 @@ const db = getDatabase(app);
 const scoreRef = ref(db, "scores");
 const eventRef = ref(db, "events");
 
+// --- 화면 전환 함수 ---
 window.switchTab = function(sectionId, btnElement) {
   document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -141,6 +136,7 @@ window.switchTab = function(sectionId, btnElement) {
   btnElement.classList.add('active');
 }
 
+// --- 점수 관리 ---
 window.addScore = function() {
   const name = document.getElementById("name").value;
   const score = document.getElementById("score").value;
@@ -163,6 +159,7 @@ onValue(scoreRef, (snapshot) => {
 
 window.deleteScore = function(key) { remove(ref(db, "scores/" + key)); }
 
+// --- 일정 관리 ---
 let currentDate = new Date();
 let eventsArray = [];
 
@@ -193,14 +190,7 @@ onValue(eventRef, (snapshot) => {
 
 window.deleteEvent = function(key) { remove(ref(db, "events/" + key)); }
 
-window.showDayEvents = function(dateStr) {
-  const dayEvents = eventsArray.filter(e => e.date === dateStr);
-  if (dayEvents.length > 0) {
-    let message = `📅 [${dateStr}] 일정\n\n`;
-    dayEvents.forEach(e => { message += `- ${e.text}\n`; });
-    alert(message); 
-  }
-}
+// 🔹 팝업창(alert) 띄우는 함수는 요청대로 삭제했습니다.
 
 function renderCalendar() {
   const year = currentDate.getFullYear();
@@ -238,20 +228,17 @@ function renderCalendar() {
 
     eventsOnThisDay.forEach((e) => {
       dotsHtml += `<div class="event-dot"></div>`;
-      tooltipText += e.text + '\n'; // 여러 일정이면 줄바꿈해서 말풍선에 담기
+      tooltipText += e.text + '\n';
     });
 
-    // 🔹 커스텀 말풍선 HTML 추가 (일정이 있을 때만 생성)
     let tooltipHtml = '';
     if (eventsOnThisDay.length > 0) {
       tooltipHtml = `<div class="custom-tooltip">${tooltipText.trim()}</div>`;
     }
 
-    let clickEvent = eventsOnThisDay.length > 0 ? `onclick="showDayEvents('${dateStr}')"` : '';
-
-    // 날짜 칸(div) 안에 말풍선(tooltipHtml)을 같이 넣어줍니다.
+    // 🔹 onclick 이벤트를 빼서 터치/클릭해도 팝업이 뜨지 않게 변경
     html += `
-      <div class="calendar-day ${isToday} ${hasEventClass}" ${clickEvent}>
+      <div class="calendar-day ${isToday} ${hasEventClass}">
         ${i}
         ${dotsHtml}
         ${tooltipHtml}
