@@ -8,10 +8,18 @@
   :root { --primary: #4CAF50; --admin: #f44336; --bg: #f4f4f9; }
   body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: var(--bg); padding-bottom: 20px; }
   
-  /* 헤더 */
+  /* 헤더 및 상단 아이콘 */
   .header { background: var(--primary); color: white; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; position: relative; }
-  .admin-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; }
-  body.is-admin .admin-btn { background: white; color: var(--admin); }
+  
+  .home-icon { 
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%); 
+    background: white; color: var(--primary); padding: 5px 10px; border-radius: 8px; 
+    cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;
+  }
+  .home-icon:active { transform: translateY(-50%) scale(0.95); }
+
+  .admin-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; transition: 0.2s; }
+  body.is-admin .admin-btn { background: white; color: var(--admin); font-weight: bold; }
 
   /* 탭 메뉴 */
   .tab-menu { display: flex; background: #333; position: sticky; top: 0; z-index: 100; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -23,12 +31,14 @@
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* 카드 및 입력창 */
-  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; }
+  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; transition: 0.2s; }
+  .card:active { transform: scale(0.98); }
   .card h3 { margin: 0 0 8px 0; font-size: 18px; }
   .card p { margin: 0; color: #666; font-size: 13px; line-height: 1.4; }
   
   input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-  .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; }
+  .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; transition: 0.2s; }
+  .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--primary); }
   .btn-sub { background: #2196F3; }
 
@@ -49,7 +59,10 @@
 <body id="mainBody">
 
 <div class="header">
-  🏫 1-9 스마트 보드
+  <div class="home-icon" onclick="document.querySelectorAll('.tab-btn')[0].click()">🏫 1-9</div>
+  
+  스마트 보드
+  
   <div class="admin-btn" id="adminLock" onclick="handleAdmin()">🔒 로그인</div>
 </div>
 
@@ -81,13 +94,13 @@
 </div>
 
 <div id="roulette" class="app-section">
-  <div class="card">
+  <div class="card" style="cursor: default;">
     <h3>🎲 번호 뽑기 (1~32)</h3>
     <div id="pick-res">?</div>
     <button class="btn btn-primary" onclick="drawNumber()">추첨 시작</button>
   </div>
   
-  <div class="card">
+  <div class="card" style="cursor: default;">
     <h3>🪑 전체 자리 바꾸기</h3>
     <div class="blackboard">칠판 (앞)</div>
     <div id="seat-map" class="seat-grid"></div>
@@ -233,11 +246,9 @@ async function loadLunch() {
     const res = await fetch(`https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=J10&SD_SCHUL_CODE=7531106&MLSV_YMD=${new Date().toISOString().slice(0,10).replace(/-/g,'')}`);
     const data = await res.json();
     if(data.mealServiceDietInfo) {
-      // 숫자, 기호 제거하고 깔끔하게 텍스트만 추출
       let menuStr = data.mealServiceDietInfo[1].row[0].DDISH_NM.replace(/[0-9\.]/g, '').split('<br/>').join(', ');
       document.getElementById('lunch-display').innerHTML = menuStr;
       
-      // 홈 화면에도 길이를 살짝 잘라서 요약본으로 출력
       if(menuStr.length > 35) menuStr = menuStr.substring(0, 35) + "...";
       document.getElementById('main-today-lunch').innerText = menuStr;
     } else {
