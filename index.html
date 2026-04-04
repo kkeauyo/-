@@ -43,4 +43,237 @@
   input { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; }
   .action-btn { width: 100%; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
   ul { padding: 0; }
-  li { background: white; margin: 8px 0; padding: 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0
+  li { background: white; margin: 8px 0; padding: 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+  .delete-btn { background: #ffeded; color: #ff4b2b; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">새솔고 스마트 관리</div>
+
+<div class="tab-menu">
+  <button class="tab-btn active" onclick="switchTab('main-section', this)">🏠 홈</button>
+  <button class="tab-btn" onclick="switchTab('lunch-section', this)">🍽️ 급식</button>
+  <button class="tab-btn" onclick="switchTab('event-section', this)">📅 일정</button>
+  <button class="tab-btn" onclick="switchTab('score-section', this)">💯 점수</button>
+</div>
+
+<div id="main-section" class="app-section active">
+  <h2 style="margin-top:0;">안녕하세요! 👋</h2>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
+      <h3>🍱 오늘 뭐 나와?</h3>
+      <p id="main-today-lunch">급식을 불러오고 있습니다...</p>
+    </div>
+    <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
+      <h3>📅 이번 달 일정</h3>
+      <p>수행평가와 학급 행사를 확인하세요.</p>
+    </div>
+    <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[3].click()">
+      <h3>💯 성적 관리</h3>
+      <p>우리 반 점수 리스트를 관리합니다.</p>
+    </div>
+  </div>
+</div>
+
+<div id="lunch-section" class="app-section">
+  <h3>🍽️ 새솔고 급식 달력</h3>
+  <div class="calendar-wrapper">
+    <div class="calendar-header">
+      <button onclick="changeLunchMonth(-1)">◀</button>
+      <h4 id="lunch-calendar-title">2024년 5월</h4>
+      <button onclick="changeLunchMonth(1)">▶</button>
+    </div>
+    <div id="lunch-calendar-grid" class="calendar-grid"></div>
+  </div>
+</div>
+
+<div id="event-section" class="app-section">
+  <h3>📅 일정 관리</h3>
+  <input type="date" id="eventDate">
+  <input type="text" id="eventText" placeholder="일정 내용을 입력하세요">
+  <button class="action-btn" onclick="addEvent()">일정 등록하기</button>
+
+  <div class="calendar-wrapper">
+    <div class="calendar-header">
+      <button onclick="changeEventMonth(-1)">◀</button>
+      <h4 id="event-calendar-title">2024년 5월</h4>
+      <button onclick="changeEventMonth(1)">▶</button>
+    </div>
+    <div id="event-calendar-grid" class="calendar-grid"></div>
+  </div>
+  <ul id="eventList"></ul>
+</div>
+
+<div id="score-section" class="app-section">
+  <h3>💯 점수 관리</h3>
+  <input id="scoreName" placeholder="학생 이름">
+  <input id="scoreValue" type="number" placeholder="점수">
+  <button class="action-btn" onclick="addScore()">점수 추가</button>
+  <ul id="scoreList"></ul>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBWku20Zf1Mn0mvdkCId2HnIsd1WDu3e9I",
+  authDomain: "schoolproject-10903-34016.firebaseapp.com",
+  databaseURL: "https://schoolproject-10903-34016-default-rtdb.firebaseio.com/",
+  projectId: "schoolproject-10903-34016",
+  storageBucket: "schoolproject-10903-34016.firebasestorage.app",
+  messagingSenderId: "1003562540722",
+  appId: "1:1003562540722:web:7e66f08a92a326c6d3b3ab"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 상태 변수
+let lunchDate = new Date();
+let eventDate = new Date();
+let eventsArray = [];
+let lunchCache = {};
+
+// 화면 전환
+window.switchTab = (id, btn) => {
+  document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+};
+
+// --- [급식 로직] ---
+async function fetchLunch(dateObj) {
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth();
+  const from = `${year}${String(month + 1).padStart(2, '0')}01`;
+  const to = `${year}${String(month + 1).padStart(2, '0')}31`;
+
+  try {
+    const sRes = await fetch(`https://open.neis.go.kr/hub/schoolInfo?Type=json&SCHUL_NM=새솔고등학교`);
+    const sData = await sRes.json();
+    const school = sData.schoolInfo[1].row[0];
+
+    const mRes = await fetch(`https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=${school.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${school.SD_SCHUL_CODE}&MLSV_FROM_YMD=${from}&MLSV_TO_YMD=${to}`);
+    const mData = await mRes.json();
+
+    if (mData.mealServiceDietInfo) {
+      mData.mealServiceDietInfo[1].row.forEach(r => {
+        const dKey = `${r.MLSV_YMD.substring(0,4)}-${r.MLSV_YMD.substring(4,6)}-${r.MLSV_YMD.substring(6,8)}`;
+        lunchCache[dKey] = r.DDISH_NM.replace(/[0-9\.]/g, '').split('<br/>').slice(0,5).join('<br/>');
+      });
+    }
+  } catch (e) { console.log(e); }
+  renderLunchCalendar();
+  updateMainLunch();
+}
+
+function renderLunchCalendar() {
+  const year = lunchDate.getFullYear();
+  const month = lunchDate.getMonth();
+  document.getElementById("lunch-calendar-title").innerText = `${year}년 ${month + 1}월`;
+  
+  renderGenericCalendar("lunch-calendar-grid", lunchDate, (dStr, dateNum) => {
+    const menu = lunchCache[dStr] ? `<div class="lunch-text">${lunchCache[dStr]}</div>` : "";
+    return `<b>${dateNum}</b>${menu}`;
+  });
+}
+
+window.changeLunchMonth = (dir) => {
+  lunchDate.setMonth(lunchDate.getMonth() + dir);
+  fetchLunch(lunchDate);
+};
+
+function updateMainLunch() {
+  const now = new Date();
+  const k = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  document.getElementById("main-today-lunch").innerHTML = lunchCache[k] || "오늘은 급식 정보가 없어요.";
+}
+
+// --- [일정 로직] ---
+window.addEvent = () => {
+  const date = document.getElementById("eventDate").value;
+  const text = document.getElementById("eventText").value;
+  if(date && text) push(ref(db, "events"), { date, text });
+};
+
+onValue(ref(db, "events"), (snap) => {
+  eventsArray = [];
+  const list = document.getElementById("eventList");
+  list.innerHTML = "";
+  snap.forEach(c => {
+    eventsArray.push({ key: c.key, ...c.val() });
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${c.val().date} : ${c.val().text}</span> <button class="delete-btn" onclick="deleteEvent('${c.key}')">삭제</button>`;
+    list.appendChild(li);
+  });
+  renderEventCalendar();
+});
+
+window.deleteEvent = (k) => remove(ref(db, `events/${k}`));
+
+function renderEventCalendar() {
+  const year = eventDate.getFullYear();
+  const month = eventDate.getMonth();
+  document.getElementById("event-calendar-title").innerText = `${year}년 ${month + 1}월`;
+
+  renderGenericCalendar("event-calendar-grid", eventDate, (dStr, dateNum) => {
+    const dayEvents = eventsArray.filter(e => e.date === dStr);
+    let eventHtml = "";
+    dayEvents.forEach(e => {
+      eventHtml += `<div class="event-item">${e.text}</div>`;
+    });
+    return `<b>${dateNum}</b>${eventHtml}`;
+  });
+}
+
+window.changeEventMonth = (dir) => {
+  eventDate.setMonth(eventDate.getMonth() + dir);
+  renderEventCalendar();
+};
+
+// --- [성적 로직] ---
+window.addScore = () => {
+  const name = document.getElementById("scoreName").value;
+  const score = document.getElementById("scoreValue").value;
+  if(name && score) push(ref(db, "scores"), { name, score });
+};
+onValue(ref(db, "scores"), (snap) => {
+  const list = document.getElementById("scoreList");
+  list.innerHTML = "";
+  snap.forEach(c => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span>${c.val().name} : ${c.val().score}점</span> <button class="delete-btn" onclick="remove(ref(db, 'scores/${c.key}'))">삭제</button>`;
+    list.appendChild(li);
+  });
+});
+
+// --- [공통 달력 생성 함수] ---
+function renderGenericCalendar(gridId, baseDate, contentFn) {
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const grid = document.getElementById(gridId);
+  const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+
+  let html = `<div class="calendar-day-name" style="color:red">일</div><div class="calendar-day-name">월</div><div class="calendar-day-name">화</div><div class="calendar-day-name">수</div><div class="calendar-day-name">목</div><div class="calendar-day-name">금</div><div class="calendar-day-name" style="color:blue">토</div>`;
+
+  for(let i=0; i<firstDay; i++) html += `<div class="calendar-day" style="background:#f9f9f9"></div>`;
+
+  for(let i=1; i<=lastDate; i++) {
+    const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+    const isToday = dStr === todayStr ? 'today' : '';
+    html += `<div class="calendar-day ${isToday}">${contentFn(dStr, i)}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+// 초기 로딩
+fetchLunch(lunchDate);
+renderEventCalendar();
+</script>
+</body>
+</html>
