@@ -8,13 +8,12 @@
   :root { --primary: #4CAF50; --admin: #f44336; --bg: #f4f4f9; }
   body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: var(--bg); padding-bottom: 20px; user-select: none; }
   
-  /* 헤더 및 상단 아이콘 */
+  /* 헤더 및 탭 메뉴 */
   .header { background: var(--primary); color: white; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; position: relative; }
   .home-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: white; color: var(--primary); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
   .admin-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; }
   body.is-admin .admin-btn { background: white; color: var(--admin); font-weight: bold; }
 
-  /* 탭 메뉴 */
   .tab-menu { display: flex; background: #333; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
   .tab-btn { flex: 0 0 auto; padding: 12px 18px; background: none; color: white; border: none; font-size: 14px; cursor: pointer; }
   .tab-btn.active { background: var(--primary); font-weight: bold; }
@@ -23,34 +22,36 @@
   .app-section.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  /* 카드 및 공통 요소 */
+  /* 공통 카드 및 버튼 */
   .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
   .card h3 { margin: 0 0 8px 0; font-size: 18px; }
-  input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-  .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; }
+  .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; transition: 0.2s; }
+  .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--primary); }
   .btn-sub { background: #2196F3; }
-  .btn-half { width: 48%; display: inline-block; }
-
-  /* 🎡 원판 룰렛 스타일 */
-  .roulette-container { position: relative; width: 300px; height: 300px; margin: 20px auto; }
-  #rouletteWheel { width: 100%; height: 100%; transition: transform 4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #e91e63; z-index: 10; }
-  #winner-display { font-size: 30px; font-weight: bold; text-align: center; color: #e91e63; height: 40px; margin-top: 10px; }
+  .btn-stop { background: #e91e63; }
+  
+  /* 🎰 가로 슬롯머신 스타일 */
+  #slot-container { overflow: hidden; width: 100%; height: 70px; position: relative; background: #fff; border: 3px solid #ddd; border-radius: 8px; margin: 15px 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05); }
+  #slot-numbers { display: flex; position: absolute; left: 0; height: 100%; align-items: center; }
+  .slot-item { width: 60px; flex-shrink: 0; text-align: center; font-size: 32px; font-weight: bold; color: #333; }
+  .slot-center-line { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #e91e63; transform: translateX(-50%); z-index: 5; box-shadow: 0 0 5px rgba(233, 30, 99, 0.5); }
+  #winner-display { font-size: 24px; font-weight: bold; text-align: center; color: #e91e63; height: 35px; }
 
   /* 🪑 자리 배치도 스타일 */
+  .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
   .blackboard { width: 60%; margin: 0 auto 15px; background: #333; color: white; text-align: center; padding: 8px; border-radius: 5px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 0 #111; }
-  .seat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+  
+  .seat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; transition: 0.3s; }
+  .seat-grid.attached-mode { gap: 2px; } /* 붙이기 모드 시 간격 최소화 */
+  
   .seat { background: #fff; border: 2px solid #ddd; padding: 15px 0; text-align: center; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+  .seat-grid.attached-mode .seat { border-radius: 2px; border-width: 1px; } /* 붙이기 모드 시 각지게 변경 */
+  
   .seat.covered { background: #9e9e9e; color: #9e9e9e; border-color: #757575; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
   .seat.covered::after { content: "?"; color: white; display: block; }
   .seat.locked { background: #ffeb3b; border-color: #f57f17; color: #d84315; }
   .seat.drag-over { border: 2px dashed var(--primary); background: #e8f5e9; transform: scale(1.05); }
-
-  /* 리스트 */
-  .list-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; position: relative; border-left: 4px solid #ddd; }
-  .admin-only { display: none; }
-  body.is-admin .admin-only { display: block; }
 </style>
 </head>
 <body id="mainBody">
@@ -65,38 +66,43 @@
   <button class="tab-btn active" onclick="switchTab('home', this)">🏠 홈</button>
   <button class="tab-btn" onclick="switchTab('roulette', this)">🎲 룰렛/자리</button>
   <button class="tab-btn" onclick="switchTab('board', this)">💬 익명게판</button>
-  <button class="tab-btn" onclick="switchTab('suggest', this)">💡 건의함</button>
 </div>
 
 <div id="home" class="app-section active">
   <div class="card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
     <h3>🎲 룰렛 & 자리 바꾸기</h3>
-    <p>돌림판과 덮개 기능이 있는 자리바꾸기!</p>
-  </div>
-  <div class="card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
-    <h3>💬 익명 자유게시판</h3>
+    <p>긴장감 넘치는 스크롤 뽑기와 자리바꾸기!</p>
   </div>
 </div>
 
 <div id="roulette" class="app-section">
-  <div class="card">
-    <h3>🎡 번호 돌림판</h3>
-    <div class="roulette-container">
-      <div class="pointer"></div>
-      <canvas id="rouletteWheel" width="300" height="300"></canvas>
-    </div>
+  <div class="card" style="cursor: default;">
+    <h3>🎰 스크롤 번호 뽑기</h3>
     <div id="winner-display">대기 중...</div>
-    <button class="btn btn-primary" id="spinBtn" onclick="spinWheel()">돌리기!</button>
+    <div id="slot-container">
+      <div id="slot-numbers"></div>
+      <div class="slot-center-line"></div>
+    </div>
+    <button class="btn btn-primary" id="slotActionBtn" onclick="toggleSlot()">시작!</button>
   </div>
   
-  <div class="card">
-    <h3>🪑 덮개 & 드래그 자리표</h3>
-    <p style="font-size:12px; color:#666;">* 덮인 자리를 터치해 <b>공개</b>하고, 공개된 자리를 터치해 <b>고정(노란색)</b>하세요.<br>* 자리를 <b>드래그</b>해서 다른 자리에 놓으면 위치가 바뀝니다.</p>
+  <div class="card" style="cursor: default;">
+    <h3>🪑 자리표 (덮개 & 붙이기)</h3>
+    <p style="font-size:12px; color:#666; margin-bottom:15px;">* 드래그해서 위치 교체 / 터치로 고정(노란색)</p>
     
-    <div style="display: flex; justify-content: space-between;">
-      <button class="btn btn-sub btn-half" style="background:#757575;" onclick="toggleAllCovers()">모두 덮기/열기</button>
-      <button class="btn btn-sub btn-half" style="background:#673ab7;" id="shuffleBtn" onclick="startShuffle()">남은 자리 섞기</button>
+    <div class="controls-row">
+      <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+        <input type="checkbox" id="useCoverToggle" style="width: 16px; margin: 0;" checked> 
+        <span>섞을 때 덮개 씌우기</span>
+      </label>
+      <button onclick="toggleSeatLayout()" id="layoutBtn" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #999; background: #fff; cursor: pointer; font-weight: bold;">책상 붙이기</button>
     </div>
+    <div class="controls-row">
+      <button class="btn btn-sub" style="width: 48%; background:#757575; margin: 0;" onclick="toggleAllCovers()">모두 덮기/열기</button>
+      <button class="btn btn-sub" style="width: 48%; background:#673ab7; margin: 0;" onclick="startShuffle()">남은 자리 섞기</button>
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
 
     <div class="blackboard">칠판 (앞)</div>
     <div id="seat-map" class="seat-grid"></div>
@@ -104,7 +110,6 @@
 </div>
 
 <div id="board" class="app-section"><div class="card">준비 중...</div></div>
-<div id="suggest" class="app-section"><div class="card">준비 중...</div></div>
 
 <script>
 // --- 공통 기능 ---
@@ -115,64 +120,110 @@ window.switchTab = (id, btn) => {
   if(btn) btn.classList.add('active');
 };
 
-// --- 🎡 1. 원판 룰렛 로직 ---
-const canvas = document.getElementById('rouletteWheel');
-const ctx = canvas.getContext('2d');
-const numSegments = 32;
-let currentRotation = 0;
+// --- 🎰 1. 가로 슬롯머신(스크롤 뽑기) 로직 ---
+const slotNumbersEl = document.getElementById('slot-numbers');
+const itemWidth = 60; 
+const NUM_ITEMS = 600; // 충분히 긴 트랙
+let items = [];
+let slotPos = 0;
+let slotSpeed = 0;
+let slotState = 'idle'; // idle, running, slowing
 
-function drawWheel() {
-  const radius = canvas.width / 2;
-  const arc = Math.PI * 2 / numSegments;
-  
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < numSegments; i++) {
-    ctx.beginPath();
-    ctx.fillStyle = i % 2 === 0 ? '#4CAF50' : '#8BC34A';
-    ctx.moveTo(radius, radius);
-    ctx.arc(radius, radius, radius, i * arc, (i + 1) * arc);
-    ctx.fill();
-    
-    ctx.save();
-    ctx.translate(radius, radius);
-    ctx.rotate(i * arc + arc / 2);
-    ctx.textAlign = "right";
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 14px Arial";
-    ctx.fillText(i + 1, radius - 15, 5);
-    ctx.restore();
+function buildSlot() {
+  slotNumbersEl.innerHTML = '';
+  items = [];
+  let html = '';
+  for(let i=0; i<NUM_ITEMS; i++) {
+    let n = Math.floor(Math.random() * 32) + 1;
+    items.push(n);
+    html += `<div class="slot-item">${n}</div>`;
   }
+  slotNumbersEl.innerHTML = html;
 }
-drawWheel();
 
-window.spinWheel = () => {
-  const btn = document.getElementById('spinBtn');
+window.toggleSlot = () => {
+  const btn = document.getElementById('slotActionBtn');
   const display = document.getElementById('winner-display');
-  btn.disabled = true;
-  display.innerText = "돌아가는 중...";
   
-  const randomSegment = Math.floor(Math.random() * numSegments); // 당첨 번호 (0~31)
-  const spins = 5; // 기본으로 5바퀴 돔
-  const degreePerSegment = 360 / numSegments;
-  
-  // 돌림판의 오른쪽(0도) 기준이므로, 12시 방향(-90도)에 맞추기 위한 각도 계산
-  const targetDegree = (spins * 360) + (270 - (randomSegment * degreePerSegment) - (degreePerSegment/2));
-  
-  currentRotation += targetDegree;
-  canvas.style.transform = `rotate(${currentRotation}deg)`;
-  
-  setTimeout(() => {
-    display.innerText = `🎉 ${randomSegment + 1}번 당첨! 🎉`;
-    btn.disabled = false;
-  }, 4000);
+  if(slotState === 'idle') {
+    buildSlot();
+    slotPos = 0;
+    slotSpeed = 30; // 초기 이동 속도
+    slotState = 'running';
+    
+    btn.innerText = '🛑 멈춤!';
+    btn.className = 'btn btn-stop';
+    display.innerText = '돌아가는 중...';
+    display.style.color = '#333';
+    
+    loopSlot();
+  } else if(slotState === 'running') {
+    slotState = 'slowing';
+    btn.disabled = true;
+    btn.innerText = '감속 중...';
+  }
 };
 
-// --- 🪑 2. 덮개 & 드래그 앤 드롭 자리 바꾸기 ---
+function loopSlot() {
+  const containerWidth = document.getElementById('slot-container').offsetWidth;
+  
+  if(slotState === 'running') {
+    slotPos += slotSpeed;
+  } else if (slotState === 'slowing') {
+    slotSpeed *= 0.97; // 마찰력 (숫자가 클수록 늦게 멈춤)
+    slotPos += slotSpeed;
+    
+    if(slotSpeed < 0.6) {
+      // 속도가 거의 줄면 가장 가까운 숫자에 스냅(정렬)
+      let centerOffset = containerWidth / 2;
+      let currentCenterTrackX = slotPos + centerOffset;
+      let targetIndex = Math.round((currentCenterTrackX - itemWidth/2) / itemWidth);
+      
+      if(targetIndex < 0) targetIndex = 0;
+      if(targetIndex >= NUM_ITEMS) targetIndex = NUM_ITEMS - 1;
+      
+      slotPos = (targetIndex * itemWidth) + (itemWidth / 2) - centerOffset; // 정확한 위치 보정
+      
+      slotState = 'idle';
+      let btn = document.getElementById('slotActionBtn');
+      btn.innerText = '다시 시작!';
+      btn.disabled = false;
+      btn.className = 'btn btn-primary';
+      
+      const display = document.getElementById('winner-display');
+      display.innerText = `🎉 ${items[targetIndex]}번 당첨! 🎉`;
+      display.style.color = '#e91e63';
+    }
+  }
+  
+  slotNumbersEl.style.transform = `translateX(-${slotPos}px)`;
+  if(slotState !== 'idle') requestAnimationFrame(loopSlot);
+}
+
+
+// --- 🪑 2. 자리 배치도 로직 (덮개, 붙이기/띄우기, 드래그) ---
 let seats = Array.from({length: 32}, (_, i) => i + 1);
 let locked = new Array(32).fill(false);
 let covered = new Array(32).fill(false);
+let draggedIdx = null;
 
-let draggedIdx = null; // 드래그 중인 자리 인덱스
+// 책상 붙이기/띄우기 토글
+let isAttached = false;
+window.toggleSeatLayout = () => {
+  isAttached = !isAttached;
+  const grid = document.getElementById('seat-map');
+  const btn = document.getElementById('layoutBtn');
+  
+  if(isAttached) {
+    grid.classList.add('attached-mode');
+    btn.innerText = '책상 띄우기';
+    btn.style.background = '#e8f5e9';
+  } else {
+    grid.classList.remove('attached-mode');
+    btn.innerText = '책상 붙이기';
+    btn.style.background = '#fff';
+  }
+};
 
 window.toggleAllCovers = () => {
   const isAnyCovered = covered.some(v => v);
@@ -189,16 +240,14 @@ window.handleSeatClick = (idx) => {
   renderSeats();
 };
 
-// 드래그 앤 드롭 이벤트 핸들러
+// 드래그 앤 드롭
 window.dragStart = (e, idx) => { draggedIdx = idx; };
 window.dragOver = (e, idx) => { e.preventDefault(); document.getElementById(`seat-${idx}`).classList.add('drag-over'); };
 window.dragLeave = (e, idx) => { document.getElementById(`seat-${idx}`).classList.remove('drag-over'); };
 window.drop = (e, targetIdx) => {
   e.preventDefault();
   document.getElementById(`seat-${targetIdx}`).classList.remove('drag-over');
-  
   if (draggedIdx !== null && draggedIdx !== targetIdx) {
-    // 배열 데이터 스왑 (합쳐지는 듯한 교체)
     [seats[draggedIdx], seats[targetIdx]] = [seats[targetIdx], seats[draggedIdx]];
     [locked[draggedIdx], locked[targetIdx]] = [locked[targetIdx], locked[draggedIdx]];
     [covered[draggedIdx], covered[targetIdx]] = [covered[targetIdx], covered[draggedIdx]];
@@ -224,6 +273,8 @@ window.renderSeats = () => {
 };
 
 window.startShuffle = () => {
+  const useCover = document.getElementById('useCoverToggle').checked; // 체크박스 확인
+  
   let finalUnlocked = seats.filter((_, i) => !locked[i]);
   finalUnlocked.sort(() => Math.random() - 0.5);
   
@@ -231,13 +282,14 @@ window.startShuffle = () => {
   for(let i=0; i<32; i++) {
     if(!locked[i]) {
       seats[i] = finalUnlocked[fIdx++];
-      covered[i] = true; // 섞은 후엔 기본으로 덮기!
+      covered[i] = useCover; // 체크되어 있을 때만 덮개 적용
     }
   }
   renderSeats();
 };
 
-renderSeats(); // 초기화
+buildSlot(); // 슬롯 초기화
+renderSeats(); // 자리 초기화
 </script>
 </body>
 </html>
