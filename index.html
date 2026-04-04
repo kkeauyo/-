@@ -27,13 +27,14 @@
   .calendar-header h4 { margin: 0; font-size: 18px; }
   .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
   .calendar-day-name { font-weight: bold; padding: 5px; background: #e0e0e0; border-radius: 5px; font-size: 14px; }
-  .calendar-day { padding: 10px 5px; background: #fafafa; border-radius: 5px; border: 1px solid #eee; min-height: 40px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 14px; }
-  .calendar-day.today { border: 2px solid #4CAF50; font-weight: bold; color: #4CAF50; }
-  .calendar-day.has-event { background: #e8f5e9; }
   
-  /* 🔹 빨간 점 디자인 수정: 마우스를 올리면 손가락 모양으로 변하게 cursor 추가 */
-  .event-dot { width: 8px; height: 8px; background: #ff4b2b; border-radius: 50%; margin-top: 3px; cursor: pointer; }
-  .event-dot:hover { transform: scale(1.2); } /* 마우스 올렸을 때 살짝 커지는 효과 */
+  /* 🔹 클릭 가능한 날짜 칸에 효과 주기 */
+  .calendar-day { padding: 10px 5px; background: #fafafa; border-radius: 5px; border: 1px solid #eee; min-height: 40px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 14px; transition: 0.2s; }
+  .calendar-day.today { border: 2px solid #4CAF50; font-weight: bold; color: #4CAF50; }
+  .calendar-day.has-event { background: #e8f5e9; cursor: pointer; } /* 일정이 있으면 손가락 모양 커서 */
+  .calendar-day.has-event:active { background: #c8e6c9; transform: scale(0.95); } /* 터치할 때 살짝 눌리는 효과 */
+  
+  .event-dot { width: 8px; height: 8px; background: #ff4b2b; border-radius: 50%; margin-top: 3px; }
 </style>
 </head>
 <body>
@@ -153,6 +154,20 @@ onValue(eventRef, (snapshot) => {
 
 window.deleteEvent = function(key) { remove(ref(db, "events/" + key)); }
 
+// 🔹 클릭 시 알림창을 띄워주는 새로운 함수 추가
+window.showDayEvents = function(dateStr) {
+  // 클릭한 날짜의 일정들만 찾기
+  const dayEvents = eventsArray.filter(e => e.date === dateStr);
+  
+  if (dayEvents.length > 0) {
+    let message = `📅 [${dateStr}] 일정\n\n`;
+    dayEvents.forEach(e => {
+      message += `- ${e.text}\n`; // 일정 내용을 줄바꿈하며 추가
+    });
+    alert(message); // 스마트폰/PC의 기본 팝업창으로 띄워줌
+  }
+}
+
 function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -173,35 +188,4 @@ function renderCalendar() {
   `;
 
   for(let i = 0; i < firstDay; i++) {
-    html += `<div class="calendar-day" style="background: transparent; border: none;"></div>`;
-  }
-
-  const today = new Date();
-  for(let i = 1; i <= lastDate; i++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-    const eventsOnThisDay = eventsArray.filter(e => e.date === dateStr);
-    const hasEventClass = eventsOnThisDay.length > 0 ? 'has-event' : '';
-    const isToday = (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) ? 'today' : '';
-
-    let dotsHtml = '';
-    
-    // 🔹 핵심 변경 부분: e (이벤트 데이터)를 받아와서 title 속성에 넣어줍니다.
-    eventsOnThisDay.forEach((e) => {
-      dotsHtml += `<div class="event-dot" title="${e.text}"></div>`;
-    });
-
-    html += `<div class="calendar-day ${isToday} ${hasEventClass}">${i}${dotsHtml}</div>`;
-  }
-
-  grid.innerHTML = html;
-}
-
-window.changeMonth = function(dir) {
-  currentDate.setMonth(currentDate.getMonth() + dir);
-  renderCalendar();
-}
-
-renderCalendar();
-</script>
-</body>
-</html>
+    html += `<div class="calendar-day" style="
