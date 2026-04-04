@@ -5,28 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>반 관리 앱</title>
 <style>
-  /* 📱 모바일 앱 느낌을 주는 기본 스타일 */
   body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: #f4f4f9; }
-  
-  /* 윗부분 제목 (헤더) */
   .header { background-color: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; }
-
-  /* 탭 메뉴 스타일 */
+  
+  /* 탭 메뉴 */
   .tab-menu { display: flex; background-color: #333; }
   .tab-btn { flex: 1; padding: 15px; background: none; color: white; border: none; font-size: 16px; cursor: pointer; transition: 0.3s; }
   .tab-btn.active { background-color: #4CAF50; font-weight: bold; border-bottom: 4px solid #fff; }
-
-  /* 각 기능이 들어갈 화면 (처음엔 숨김) */
+  
   .app-section { display: none; padding: 20px; }
-  /* active 클래스가 붙은 화면만 보여줌 */
   .app-section.active { display: block; }
-
-  /* 입력창 및 버튼 디자인 조금 다듬기 */
+  
   input { width: 100%; padding: 10px; margin: 5px 0 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-  button.action-btn { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  button.action-btn { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
   ul { padding: 0; list-style-type: none; }
   li { background: white; margin: 5px 0; padding: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
   .delete-btn { background-color: #ff4b2b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+
+  /* 📅 달력 디자인 추가 */
+  .calendar-wrapper { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 20px; }
+  .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .calendar-header button { padding: 5px 15px; cursor: pointer; border: none; background: #eee; border-radius: 5px; font-weight: bold; }
+  .calendar-header h4 { margin: 0; font-size: 18px; }
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+  .calendar-day-name { font-weight: bold; padding: 5px; background: #e0e0e0; border-radius: 5px; font-size: 14px; }
+  .calendar-day { padding: 10px 5px; background: #fafafa; border-radius: 5px; border: 1px solid #eee; min-height: 40px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 14px; }
+  .calendar-day.today { border: 2px solid #4CAF50; font-weight: bold; color: #4CAF50; }
+  .calendar-day.has-event { background: #e8f5e9; }
+  .event-dot { width: 6px; height: 6px; background: #ff4b2b; border-radius: 50%; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -56,6 +62,16 @@
 
   <h3>다가오는 일정</h3>
   <ul id="eventList"></ul>
+
+  <div class="calendar-wrapper">
+    <div class="calendar-header">
+      <button onclick="changeMonth(-1)">◀</button>
+      <h4 id="calendar-month-year">2026년 4월</h4>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="calendar-grid" id="calendar-grid">
+      </div>
+  </div>
 </div>
 
 <script type="module">
@@ -78,23 +94,15 @@ const db = getDatabase(app);
 const scoreRef = ref(db, "scores");
 const eventRef = ref(db, "events");
 
-// --- 📱 화면(탭) 전환 함수 ---
+// --- 📱 탭 전환 ---
 window.switchTab = function(sectionId, btnElement) {
-  // 1. 모든 화면 숨기기
-  document.querySelectorAll('.app-section').forEach(section => {
-    section.classList.remove('active');
-  });
-  // 2. 모든 탭 버튼 색상 원래대로 돌리기
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  
-  // 3. 클릭한 화면만 보여주고, 클릭한 버튼만 강조하기
+  document.querySelectorAll('.app-section').forEach(sec => sec.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
   document.getElementById(sectionId).classList.add('active');
   btnElement.classList.add('active');
 }
 
-// --- 점수 관리 로직 ---
+// --- 💯 점수 관리 ---
 window.addScore = function() {
   const name = document.getElementById("name").value;
   const score = document.getElementById("score").value;
@@ -115,11 +123,13 @@ onValue(scoreRef, (snapshot) => {
   });
 });
 
-window.deleteScore = function(key) {
-  remove(ref(db, "scores/" + key));
-}
+window.deleteScore = function(key) { remove(ref(db, "scores/" + key)); }
 
-// --- 일정 관리 로직 ---
+// --- 📅 일정 관리 및 달력 ---
+let currentDate = new Date(); // 현재 날짜 (달력을 그리기 위한 기준)
+let eventsArray = []; // DB에서 가져온 일정들을 모아둘 배열
+
+// 일정을 DB에 추가
 window.addEvent = function() {
   const date = document.getElementById("eventDate").value;
   const text = document.getElementById("eventText").value;
@@ -128,21 +138,85 @@ window.addEvent = function() {
   document.getElementById("eventText").value = "";
 }
 
+// 일정을 가져오고 화면에 표시
 onValue(eventRef, (snapshot) => {
   const list = document.getElementById("eventList");
   list.innerHTML = "";
+  eventsArray = []; // 초기화
+  
   snapshot.forEach(child => {
+    const data = child.val();
+    eventsArray.push(data); // 달력에 점을 찍기 위해 배열에 저장!
+    
     const li = document.createElement("li");
-    li.innerHTML = `<span><b>${child.val().date}</b> - ${child.val().text}</span> 
+    li.innerHTML = `<span><b>${data.date}</b> - ${data.text}</span> 
                     <button class='delete-btn' onclick='deleteEvent("${child.key}")'>삭제</button>`;
     list.appendChild(li);
   });
+  
+  renderCalendar(); // 데이터가 바뀌면 달력도 새로 그립니다!
 });
 
-window.deleteEvent = function(key) {
-  remove(ref(db, "events/" + key));
-}
-</script>
+window.deleteEvent = function(key) { remove(ref(db, "events/" + key)); }
 
+// --- 달력 그리기 마법 ---
+function renderCalendar() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  document.getElementById("calendar-month-year").innerText = `${year}년 ${month + 1}월`;
+
+  const firstDay = new Date(year, month, 1).getDay(); // 이번 달 1일의 요일 (0:일 ~ 6:토)
+  const lastDate = new Date(year, month + 1, 0).getDate(); // 이번 달의 마지막 날짜
+
+  const grid = document.getElementById("calendar-grid");
+  let html = `
+    <div class="calendar-day-name" style="color:red;">일</div>
+    <div class="calendar-day-name">월</div>
+    <div class="calendar-day-name">화</div>
+    <div class="calendar-day-name">수</div>
+    <div class="calendar-day-name">목</div>
+    <div class="calendar-day-name">금</div>
+    <div class="calendar-day-name" style="color:blue;">토</div>
+  `;
+
+  // 1일이 시작하기 전 빈 칸 채우기
+  for(let i = 0; i < firstDay; i++) {
+    html += `<div class="calendar-day" style="background: transparent; border: none;"></div>`;
+  }
+
+  const today = new Date(); // 진짜 오늘 날짜
+  for(let i = 1; i <= lastDate; i++) {
+    // 2024-05-08 형태로 날짜 문자열 만들기
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+    
+    // 이 날짜에 해당하는 일정이 있는지 찾기
+    const eventsOnThisDay = eventsArray.filter(e => e.date === dateStr);
+    const hasEventClass = eventsOnThisDay.length > 0 ? 'has-event' : '';
+    
+    // 오늘인지 확인 (테두리 강조용)
+    const isToday = (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) ? 'today' : '';
+
+    // 일정이 있으면 그 개수만큼 빨간 점(●) 만들기
+    let dotsHtml = '';
+    eventsOnThisDay.forEach(() => {
+      dotsHtml += `<div class="event-dot"></div>`;
+    });
+
+    html += `<div class="calendar-day ${isToday} ${hasEventClass}">${i}${dotsHtml}</div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+// 이전 달, 다음 달 이동 버튼
+window.changeMonth = function(dir) {
+  currentDate.setMonth(currentDate.getMonth() + dir);
+  renderCalendar();
+}
+
+// 화면이 처음 켜질 때 달력 한번 그려주기
+renderCalendar();
+
+</script>
 </body>
 </html>
