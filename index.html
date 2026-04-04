@@ -8,22 +8,19 @@
   body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: #f4f4f9; }
   .header { background-color: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; }
   
-  /* 상단 탭 메뉴 (홈 버튼 추가) */
   .tab-menu { display: flex; background-color: #333; }
-  .tab-btn { flex: 1; padding: 15px; background: none; color: white; border: none; font-size: 16px; cursor: pointer; transition: 0.3s; }
+  .tab-btn { flex: 1; padding: 10px 5px; background: none; color: white; border: none; font-size: 15px; cursor: pointer; transition: 0.3s; }
   .tab-btn.active { background-color: #4CAF50; font-weight: bold; border-bottom: 4px solid #fff; }
   
   .app-section { display: none; padding: 20px; }
   .app-section.active { display: block; }
 
-  /* 🔹 메인 메뉴 카드 디자인 */
   .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 10px; }
   .menu-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
   .menu-card:hover { transform: translateY(-5px); border-color: #4CAF50; }
   .menu-card h3 { margin: 0 0 10px 0; font-size: 22px; color: #333; }
   .menu-card p { margin: 0; color: #666; font-size: 14px; }
   
-  /* 입력 및 리스트 기본 디자인 */
   input { width: 100%; padding: 10px; margin: 5px 0 15px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
   button.action-btn { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; }
   ul { padding: 0; list-style-type: none; }
@@ -37,41 +34,40 @@
   .calendar-header h4 { margin: 0; font-size: 18px; }
   .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
   .calendar-day-name { font-weight: bold; padding: 5px; background: #e0e0e0; border-radius: 5px; font-size: 14px; }
-  
   .calendar-day { padding: 10px 5px; background: #fafafa; border-radius: 5px; border: 1px solid #eee; min-height: 40px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; font-size: 14px; }
   .calendar-day.today { border: 2px solid #4CAF50; font-weight: bold; color: #4CAF50; }
   .calendar-day.has-event { background: #e8f5e9; }
-  
   .event-dot { width: 8px; height: 8px; background: #ff4b2b; border-radius: 50%; margin-top: 3px; }
 
-  /* PC 말풍선(Tooltip) 유지 */
-  .custom-tooltip {
-    visibility: hidden; background-color: rgba(0, 0, 0, 0.8); color: #fff; text-align: center; border-radius: 6px; padding: 6px 10px; position: absolute; z-index: 10; bottom: 110%; left: 50%; transform: translateX(-50%); white-space: pre-wrap; width: max-content; max-width: 150px; font-size: 12px; opacity: 0; transition: opacity 0.2s; pointer-events: none;
-  }
+  .custom-tooltip { visibility: hidden; background-color: rgba(0, 0, 0, 0.8); color: #fff; text-align: center; border-radius: 6px; padding: 6px 10px; position: absolute; z-index: 10; bottom: 110%; left: 50%; transform: translateX(-50%); white-space: pre-wrap; width: max-content; max-width: 150px; font-size: 12px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
   .custom-tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent; }
   .calendar-day.has-event:hover .custom-tooltip { visibility: visible; opacity: 1; }
 </style>
 </head>
 <body>
 
-<div class="header">스마트 반 관리 앱</div>
+<div class="header">새솔고 스마트 관리 앱</div>
 
 <div class="tab-menu" id="top-tabs">
   <button class="tab-btn active" onclick="switchTab('main-section', this)">🏠 홈</button>
   <button class="tab-btn" onclick="switchTab('score-section', this)">💯 점수</button>
   <button class="tab-btn" onclick="switchTab('event-section', this)">📅 일정</button>
+  <button class="tab-btn" onclick="switchTab('lunch-section', this)">🍽️ 급식</button>
 </div>
 
 <div id="main-section" class="app-section active">
   <h2 style="color: #333; margin-top: 0;">환영합니다! 👋</h2>
-  <p style="color: #666; margin-bottom: 20px;">무엇을 관리할까요?</p>
+  <p style="color: #666; margin-bottom: 20px;">어떤 기능을 사용할까요?</p>
   
   <div class="menu-grid">
+    <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[3].click()">
+      <h3>🍽️ 급식 메뉴</h3>
+      <p>오늘 새솔고 점심은 뭘까?<br>매일 실시간으로 확인하세요.</p>
+    </div>
     <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
       <h3>💯 점수 관리</h3>
       <p>우리 반 학생들의 점수를<br>기록하고 관리하세요.</p>
     </div>
-    
     <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
       <h3>📅 일정 관리</h3>
       <p>수행평가, 학사일정 등을<br>달력으로 한눈에 확인하세요.</p>
@@ -108,6 +104,17 @@
   </div>
 </div>
 
+<div id="lunch-section" class="app-section">
+  <h3>🍽️ 새솔고등학교 급식실</h3>
+  <p style="color: #666; font-size: 14px;">보고 싶은 날짜를 선택하세요.</p>
+  
+  <input type="date" id="lunchDate" onchange="fetchLunch()">
+  
+  <div id="lunchResult" style="background: white; padding: 25px; border-radius: 10px; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); line-height: 1.8; font-size: 16px; text-align: center;">
+    메뉴를 불러오는 중입니다... ⏳
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, remove } 
@@ -136,6 +143,54 @@ window.switchTab = function(sectionId, btnElement) {
   btnElement.classList.add('active');
 }
 
+// --- 🍽️ 새솔고 급식 가져오기 함수 (나이스 API 연동) ---
+window.fetchLunch = async function() {
+  const dateInput = document.getElementById("lunchDate").value;
+  let targetDate = new Date();
+  
+  if (dateInput) {
+    targetDate = new Date(dateInput);
+  } else {
+    // 앱을 처음 켰을 때, 오늘 날짜로 달력(input) 초기값 세팅
+    const todayStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth()+1).padStart(2,'0')}-${String(targetDate.getDate()).padStart(2,'0')}`;
+    document.getElementById("lunchDate").value = todayStr;
+  }
+
+  // 나이스 API가 요구하는 날짜 포맷 (예: 20240508)
+  const yyyymmdd = `${targetDate.getFullYear()}${String(targetDate.getMonth()+1).padStart(2,'0')}${String(targetDate.getDate()).padStart(2,'0')}`;
+  const resultDiv = document.getElementById("lunchResult");
+  resultDiv.innerHTML = "맛있는 급식 메뉴를 불러오는 중... 🏃‍♂️💨";
+
+  try {
+    // 1. 전국 학교 중에서 '새솔고등학교'의 암호(학교코드)를 찾습니다.
+    const schoolRes = await fetch("https://open.neis.go.kr/hub/schoolInfo?Type=json&SCHUL_NM=새솔고등학교");
+    const schoolData = await schoolRes.json();
+    const school = schoolData.schoolInfo[1].row[0]; // 새솔고 데이터 추출
+    
+    // 2. 찾은 코드를 바탕으로 해당 날짜의 급식을 물어봅니다.
+    const mealRes = await fetch(`https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=${school.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${school.SD_SCHUL_CODE}&MLSV_YMD=${yyyymmdd}`);
+    const mealData = await mealRes.json();
+
+    if(mealData.mealServiceDietInfo) {
+      // 나이스 서버에서 준 메뉴 정보 가져오기
+      let menuHtml = mealData.mealServiceDietInfo[1].row[0].DDISH_NM;
+      
+      // 메뉴 이름 뒤에 붙는 알레르기 정보 숫자(예: 1.5.6.)를 깔끔하게 지워줍니다.
+      menuHtml = menuHtml.replace(/[0-9\.]/g, ''); 
+      
+      resultDiv.innerHTML = `<div style="font-weight:bold; color:#4CAF50; margin-bottom:15px; font-size:20px;">✨ 오늘의 메뉴 ✨</div>${menuHtml}`;
+    } else {
+      resultDiv.innerHTML = `<div style="font-size:40px; margin-bottom:10px;">😥</div>오늘은 급식 정보가 없거나 쉬는 날입니다.`;
+    }
+  } catch(e) {
+    resultDiv.innerHTML = "급식 정보를 불러오는데 실패했습니다. 인터넷 연결을 확인해주세요.";
+    console.error(e);
+  }
+}
+
+// 화면이 처음 켜질 때 급식 정보 자동으로 한번 불러오기
+fetchLunch();
+
 // --- 점수 관리 ---
 window.addScore = function() {
   const name = document.getElementById("name").value;
@@ -159,7 +214,7 @@ onValue(scoreRef, (snapshot) => {
 
 window.deleteScore = function(key) { remove(ref(db, "scores/" + key)); }
 
-// --- 일정 관리 ---
+// --- 일정 관리 달력 부분 ---
 let currentDate = new Date();
 let eventsArray = [];
 
@@ -175,11 +230,9 @@ onValue(eventRef, (snapshot) => {
   const list = document.getElementById("eventList");
   list.innerHTML = "";
   eventsArray = [];
-  
   snapshot.forEach(child => {
     const data = child.val();
     eventsArray.push(data);
-    
     const li = document.createElement("li");
     li.innerHTML = `<span><b>${data.date}</b> - ${data.text}</span> 
                     <button class='delete-btn' onclick='deleteEvent("${child.key}")'>삭제</button>`;
@@ -190,8 +243,6 @@ onValue(eventRef, (snapshot) => {
 
 window.deleteEvent = function(key) { remove(ref(db, "events/" + key)); }
 
-// 🔹 팝업창(alert) 띄우는 함수는 요청대로 삭제했습니다.
-
 function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -201,51 +252,29 @@ function renderCalendar() {
   const lastDate = new Date(year, month + 1, 0).getDate();
 
   const grid = document.getElementById("calendar-grid");
-  let html = `
-    <div class="calendar-day-name" style="color:red;">일</div>
-    <div class="calendar-day-name">월</div>
-    <div class="calendar-day-name">화</div>
-    <div class="calendar-day-name">수</div>
-    <div class="calendar-day-name">목</div>
-    <div class="calendar-day-name">금</div>
-    <div class="calendar-day-name" style="color:blue;">토</div>
-  `;
+  let html = `<div class="calendar-day-name" style="color:red;">일</div><div class="calendar-day-name">월</div><div class="calendar-day-name">화</div><div class="calendar-day-name">수</div><div class="calendar-day-name">목</div><div class="calendar-day-name">금</div><div class="calendar-day-name" style="color:blue;">토</div>`;
 
-  for(let i = 0; i < firstDay; i++) {
-    html += `<div class="calendar-day" style="background: transparent; border: none;"></div>`;
-  }
+  for(let i = 0; i < firstDay; i++) { html += `<div class="calendar-day" style="background: transparent; border: none;"></div>`; }
 
   const today = new Date();
   for(let i = 1; i <= lastDate; i++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
     const eventsOnThisDay = eventsArray.filter(e => e.date === dateStr);
-    
     const hasEventClass = eventsOnThisDay.length > 0 ? 'has-event' : '';
     const isToday = (year === today.getFullYear() && month === today.getMonth() && i === today.getDate()) ? 'today' : '';
 
     let dotsHtml = '';
     let tooltipText = '';
-
     eventsOnThisDay.forEach((e) => {
       dotsHtml += `<div class="event-dot"></div>`;
       tooltipText += e.text + '\n';
     });
 
     let tooltipHtml = '';
-    if (eventsOnThisDay.length > 0) {
-      tooltipHtml = `<div class="custom-tooltip">${tooltipText.trim()}</div>`;
-    }
+    if (eventsOnThisDay.length > 0) tooltipHtml = `<div class="custom-tooltip">${tooltipText.trim()}</div>`;
 
-    // 🔹 onclick 이벤트를 빼서 터치/클릭해도 팝업이 뜨지 않게 변경
-    html += `
-      <div class="calendar-day ${isToday} ${hasEventClass}">
-        ${i}
-        ${dotsHtml}
-        ${tooltipHtml}
-      </div>
-    `;
+    html += `<div class="calendar-day ${isToday} ${hasEventClass}">${i}${dotsHtml}${tooltipHtml}</div>`;
   }
-
   grid.innerHTML = html;
 }
 
@@ -253,7 +282,6 @@ window.changeMonth = function(dir) {
   currentDate.setMonth(currentDate.getMonth() + dir);
   renderCalendar();
 }
-
 renderCalendar();
 </script>
 </body>
