@@ -13,7 +13,7 @@
   .admin-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; }
   body.is-admin .admin-btn { background: white; color: var(--admin); }
 
-  /* 탭 메뉴 (가로 스크롤 가능) */
+  /* 탭 메뉴 */
   .tab-menu { display: flex; background: #333; position: sticky; top: 0; z-index: 100; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .tab-btn { flex: 0 0 auto; padding: 12px 18px; background: none; color: white; border: none; font-size: 14px; cursor: pointer; }
   .tab-btn.active { background: var(--primary); font-weight: bold; }
@@ -23,7 +23,10 @@
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* 카드 및 입력창 */
-  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; }
+  .card h3 { margin: 0 0 8px 0; font-size: 18px; }
+  .card p { margin: 0; color: #666; font-size: 13px; line-height: 1.4; }
+  
   input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
   .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; }
   .btn-primary { background: var(--primary); }
@@ -59,13 +62,21 @@
 </div>
 
 <div id="home" class="app-section active">
-  <div class="card" onclick="switchTab('roulette')">
-    <h3>🎲 랜덤 추첨기</h3>
-    <p>오늘의 발표자나 자리를 정해보세요!</p>
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[4].click()">
+    <h3>🍱 오늘의 급식</h3>
+    <p id="main-today-lunch">급식 데이터를 불러오는 중...</p>
   </div>
-  <div class="card" onclick="switchTab('board')">
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
+    <h3>🎲 룰렛 & 자리 바꾸기</h3>
+    <p>오늘의 당번이나 새로운 자리를 뽑아보세요.</p>
+  </div>
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
     <h3>💬 익명 자유게시판</h3>
     <p>친구들과 자유롭게 이야기를 나누세요.</p>
+  </div>
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[3].click()">
+    <h3>💡 건의사항 남기기</h3>
+    <p>우리 반을 위한 좋은 아이디어를 비밀리에 전달하세요.</p>
   </div>
 </div>
 
@@ -85,7 +96,7 @@
 </div>
 
 <div id="board" class="app-section">
-  <div class="card">
+  <div class="card" style="cursor: default;">
     <textarea id="postInput" placeholder="비속어 없는 클린한 게시판을 만들어요!"></textarea>
     <button class="btn btn-primary" onclick="addPost()">글 올리기</button>
   </div>
@@ -93,7 +104,7 @@
 </div>
 
 <div id="suggest" class="app-section">
-  <div class="card">
+  <div class="card" style="cursor: default;">
     <h3>💡 건의사항 남기기</h3>
     <p style="font-size:12px; color:#666;">작성된 내용은 관리자(선생님/반장)만 볼 수 있습니다.</p>
     <textarea id="suggestInput" placeholder="우리 반을 위한 건의사항을 남겨주세요."></textarea>
@@ -110,7 +121,7 @@
 </div>
 
 <div id="lunch" class="app-section">
-  <div class="card" id="lunch-display">급식 데이터를 불러오는 중...</div>
+  <div class="card" id="lunch-display" style="cursor: default;">급식 데이터를 불러오는 중...</div>
 </div>
 
 <script type="module">
@@ -216,17 +227,27 @@ window.deleteData = (path) => {
   if(confirm("삭제하시겠습니까?")) remove(ref(db, path));
 };
 
-// --- 급식 로딩 (심플) ---
+// --- 급식 로딩 ---
 async function loadLunch() {
   try {
     const res = await fetch(`https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=J10&SD_SCHUL_CODE=7531106&MLSV_YMD=${new Date().toISOString().slice(0,10).replace(/-/g,'')}`);
     const data = await res.json();
     if(data.mealServiceDietInfo) {
-      document.getElementById('lunch-display').innerHTML = data.mealServiceDietInfo[1].row[0].DDISH_NM;
+      // 숫자, 기호 제거하고 깔끔하게 텍스트만 추출
+      let menuStr = data.mealServiceDietInfo[1].row[0].DDISH_NM.replace(/[0-9\.]/g, '').split('<br/>').join(', ');
+      document.getElementById('lunch-display').innerHTML = menuStr;
+      
+      // 홈 화면에도 길이를 살짝 잘라서 요약본으로 출력
+      if(menuStr.length > 35) menuStr = menuStr.substring(0, 35) + "...";
+      document.getElementById('main-today-lunch').innerText = menuStr;
     } else {
       document.getElementById('lunch-display').innerText = "오늘은 급식 정보가 없습니다.";
+      document.getElementById('main-today-lunch').innerText = "오늘은 급식 정보가 없습니다.";
     }
-  } catch(e) { document.getElementById('lunch-display').innerText = "급식 정보를 가져올 수 없습니다."; }
+  } catch(e) { 
+    document.getElementById('lunch-display').innerText = "급식 정보를 가져올 수 없습니다."; 
+    document.getElementById('main-today-lunch').innerText = "급식 정보를 가져올 수 없습니다."; 
+  }
 }
 
 loadLunch();
