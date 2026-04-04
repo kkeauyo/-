@@ -33,7 +33,7 @@
   .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #ddd; border: 1px solid #ddd; }
   .calendar-day-name { font-weight: bold; padding: 8px 0; background: #f8f8f8; font-size: 11px; text-align: center; }
   
-  /* 급식 달력 전용: 메뉴가 잘 보이도록 칸을 조금 더 크게 설정 */
+  /* 급식 달력 전용 */
   .calendar-day { 
     padding: 5px 2px; background: white; min-height: 90px; position: relative; 
     display: flex; flex-direction: column; align-items: center; font-size: 11px; overflow: hidden;
@@ -53,6 +53,7 @@
   /* 메인 카드 등 */
   .menu-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
   .menu-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; cursor: pointer; border: 2px solid transparent; }
+  .menu-card:active { transform: scale(0.98); }
   
   /* 입력창 및 리스트 */
   input { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 8px; }
@@ -76,19 +77,18 @@
 </div>
 
 <div id="main-section" class="app-section active">
-  <h2 style="margin-top:0;">오늘의 급식 🍱</h2>
-  <div id="main-today-lunch-box" style="background:white; padding:20px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); line-height:1.8; cursor:pointer;" onclick="document.querySelectorAll('.tab-btn')[1].click()">
-    급식을 불러오고 있습니다...
-  </div>
-  
-  <div class="menu-grid" style="margin-top: 15px;">
+  <div class="menu-grid">
+    <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
+      <h3 style="margin: 0 0 8px 0; font-size: 20px;">🍱 오늘의 급식</h3>
+      <p id="main-today-lunch-text" style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">급식을 불러오고 있습니다...</p>
+    </div>
     <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
       <h3 style="margin: 0 0 8px 0; font-size: 20px;">📅 이번 달 일정</h3>
-      <p style="margin: 0; color: #666; font-size: 13px;">수행평가와 학급 행사를 확인하세요.</p>
+      <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">수행평가와 학급 행사를 확인하세요.</p>
     </div>
     <div class="menu-card" onclick="document.querySelectorAll('.tab-btn')[3].click()">
       <h3 style="margin: 0 0 8px 0; font-size: 20px;">💯 성적 관리</h3>
-      <p style="margin: 0; color: #666; font-size: 13px;">우리 반 점수 리스트를 관리합니다.</p>
+      <p style="margin: 0; color: #666; font-size: 13px; line-height: 1.4;">우리 반 점수 리스트를 관리합니다.</p>
     </div>
   </div>
 </div>
@@ -149,7 +149,7 @@ const db = getDatabase(app);
 let lunchDate = new Date();
 let eventDate = new Date();
 let eventsArray = [];
-let lunchCache = {}; // 날짜별 급식 저장고
+let lunchCache = {}; 
 
 window.switchTab = (id, btn) => {
   document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
@@ -158,12 +158,9 @@ window.switchTab = (id, btn) => {
   btn.classList.add('active');
 };
 
-// --- [급식 로직: 한 달 치를 싹 긁어옵니다] ---
 async function fetchMonthLunch(dateObj) {
   const year = dateObj.getFullYear();
   const month = dateObj.getMonth();
-  
-  // 나이스 API용 날짜 형식 (YYYYMMDD)
   const from = `${year}${String(month + 1).padStart(2, '0')}01`;
   const to = `${year}${String(month + 1).padStart(2, '0')}31`;
 
@@ -211,10 +208,21 @@ window.changeLunchMonth = (dir) => {
 function updateMainLunch() {
   const now = new Date();
   const k = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-  document.getElementById("main-today-lunch-box").innerHTML = lunchCache[k] ? `<div style="font-size:15px; color:#333;">${lunchCache[k]}</div>` : "오늘은 급식 정보가 없거나 휴일입니다. 😴";
+  
+  let menuStr = "오늘은 급식 정보가 없거나 휴일입니다. 😴";
+  if (lunchCache[k]) {
+    // 줄바꿈(<br/>)을 쉼표(,)로 바꿔서 한 줄로 예쁘게 출력
+    menuStr = lunchCache[k].split('<br/>').join(', ');
+    
+    // 글자가 너무 길면 카드가 깨질 수 있으니 자르기
+    if (menuStr.length > 35) {
+      menuStr = menuStr.substring(0, 35) + "...";
+    }
+  }
+  
+  document.getElementById("main-today-lunch-text").innerText = menuStr;
 }
 
-// --- [일정 로직] ---
 window.addEvent = () => {
   const date = document.getElementById("eventDate").value;
   const text = document.getElementById("eventText").value;
@@ -247,7 +255,6 @@ window.changeEventMonth = (dir) => {
   renderEventCalendar();
 };
 
-// --- [공통 달력 그리기 도구] ---
 function renderGenericCalendar(gridId, baseDate, contentFn) {
   const year = baseDate.getFullYear();
   const month = baseDate.getMonth();
@@ -268,7 +275,6 @@ function renderGenericCalendar(gridId, baseDate, contentFn) {
   grid.innerHTML = html;
 }
 
-// --- [점수 관리] ---
 onValue(ref(db, "scores"), (snap) => {
   const list = document.getElementById("scoreList");
   list.innerHTML = "";
@@ -278,13 +284,14 @@ onValue(ref(db, "scores"), (snap) => {
     list.appendChild(li);
   });
 });
+
 window.addScore = () => {
   const name = document.getElementById("scoreName").value;
   const score = document.getElementById("scoreValue").value;
   if(name && score) push(ref(db, "scores"), { name, score });
 };
 
-// 앱 시작 시 로딩
+// 앱 시작
 fetchMonthLunch(lunchDate);
 renderEventCalendar();
 </script>
