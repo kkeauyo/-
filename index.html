@@ -6,52 +6,42 @@
 <title>새솔고 1-9 스마트 보드</title>
 <style>
   :root { --primary: #4CAF50; --admin: #f44336; --bg: #f4f4f9; }
-  body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: var(--bg); padding-bottom: 20px; user-select: none; }
+  body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background-color: var(--bg); padding-bottom: 20px; }
   
-  /* 헤더 및 탭 메뉴 */
+  /* 헤더 및 상단 아이콘 */
   .header { background: var(--primary); color: white; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; position: relative; }
-  .home-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: white; color: var(--primary); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .admin-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; }
+  .home-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: white; color: var(--primary); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s; }
+  .home-icon:active { transform: translateY(-50%) scale(0.95); }
+  .admin-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 5px; font-size: 11px; cursor: pointer; transition: 0.2s; }
   body.is-admin .admin-btn { background: white; color: var(--admin); font-weight: bold; }
 
-  .tab-menu { display: flex; background: #333; position: sticky; top: 0; z-index: 100; overflow-x: auto; }
-  .tab-btn { flex: 0 0 auto; padding: 12px 18px; background: none; color: white; border: none; font-size: 14px; cursor: pointer; }
+  /* 탭 메뉴 */
+  .tab-menu { display: flex; background: #333; position: sticky; top: 0; z-index: 100; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab-btn { flex: 1; padding: 12px 0; background: none; color: white; border: none; font-size: 14px; cursor: pointer; text-align: center; }
   .tab-btn.active { background: var(--primary); font-weight: bold; }
   
   .app-section { display: none; padding: 15px; animation: fadeIn 0.3s; }
   .app-section.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  /* 공통 카드 및 버튼 */
-  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; }
+  /* 카드 및 버튼 */
+  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; transition: 0.2s; }
+  .card:active { transform: scale(0.98); }
   .card h3 { margin: 0 0 8px 0; font-size: 18px; }
-  .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-top: 10px; transition: 0.2s; }
+  .card p { margin: 0; color: #666; font-size: 13px; line-height: 1.4; }
+  input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; resize: vertical; min-height: 80px; }
+  .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; transition: 0.2s; }
   .btn:active { transform: scale(0.98); }
   .btn-primary { background: var(--primary); }
   .btn-sub { background: #2196F3; }
-  .btn-stop { background: #e91e63; }
-  
-  /* 🎰 가로 슬롯머신 스타일 */
-  #slot-container { overflow: hidden; width: 100%; height: 70px; position: relative; background: #fff; border: 3px solid #ddd; border-radius: 8px; margin: 15px 0; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05); }
-  #slot-numbers { display: flex; position: absolute; left: 0; height: 100%; align-items: center; }
-  .slot-item { width: 60px; flex-shrink: 0; text-align: center; font-size: 32px; font-weight: bold; color: #333; }
-  .slot-center-line { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #e91e63; transform: translateX(-50%); z-index: 5; box-shadow: 0 0 5px rgba(233, 30, 99, 0.5); }
-  #winner-display { font-size: 24px; font-weight: bold; text-align: center; color: #e91e63; height: 35px; }
 
-  /* 🪑 자리 배치도 스타일 */
-  .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
-  .blackboard { width: 60%; margin: 0 auto 15px; background: #333; color: white; text-align: center; padding: 8px; border-radius: 5px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 0 #111; }
-  
-  .seat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; transition: 0.3s; }
-  .seat-grid.attached-mode { gap: 2px; } /* 붙이기 모드 시 간격 최소화 */
-  
-  .seat { background: #fff; border: 2px solid #ddd; padding: 15px 0; text-align: center; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .seat-grid.attached-mode .seat { border-radius: 2px; border-width: 1px; } /* 붙이기 모드 시 각지게 변경 */
-  
-  .seat.covered { background: #9e9e9e; color: #9e9e9e; border-color: #757575; box-shadow: inset 0 0 10px rgba(0,0,0,0.2); }
-  .seat.covered::after { content: "?"; color: white; display: block; }
-  .seat.locked { background: #ffeb3b; border-color: #f57f17; color: #d84315; }
-  .seat.drag-over { border: 2px dashed var(--primary); background: #e8f5e9; transform: scale(1.05); }
+  /* 💬 게시판 & 건의함 리스트 */
+  .list-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; }
+  .list-date { font-size: 11px; color: #999; margin-top: 5px; }
+  .admin-only { display: none; }
+  body.is-admin .admin-only { display: block; }
+  .del-btn { position: absolute; right: 10px; top: 10px; color: #ccc; cursor: pointer; border: none; background: none; font-size: 16px; }
+  .del-btn:hover { color: #f44336; }
 </style>
 </head>
 <body id="mainBody">
@@ -64,55 +54,94 @@
 
 <div class="tab-menu" id="tabBar">
   <button class="tab-btn active" onclick="switchTab('home', this)">🏠 홈</button>
-  <button class="tab-btn" onclick="switchTab('roulette', this)">🎲 룰렛/자리</button>
-  <button class="tab-btn" onclick="switchTab('board', this)">💬 익명게판</button>
+  <button class="tab-btn" onclick="switchTab('board', this)">💬 익명게시판</button>
+  <button class="tab-btn" onclick="switchTab('suggest', this)">💡 건의함</button>
+  <button class="tab-btn" onclick="switchTab('lunch', this)">🍱 급식</button>
 </div>
 
 <div id="home" class="app-section active">
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[3].click()">
+    <h3>🍱 오늘의 급식</h3>
+    <p id="main-today-lunch">급식 데이터를 불러오는 중...</p>
+  </div>
   <div class="card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
-    <h3>🎲 룰렛 & 자리 바꾸기</h3>
-    <p>긴장감 넘치는 스크롤 뽑기와 자리바꾸기!</p>
+    <h3>💬 익명 자유게시판</h3>
+    <p>친구들과 자유롭게 이야기를 나누세요.</p>
+  </div>
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
+    <h3>💡 건의사항 남기기</h3>
+    <p>우리 반을 위한 좋은 아이디어를 비밀리에 전달하세요.</p>
   </div>
 </div>
 
-<div id="roulette" class="app-section">
+<div id="board" class="app-section">
   <div class="card" style="cursor: default;">
-    <h3>🎰 스크롤 번호 뽑기</h3>
-    <div id="winner-display">대기 중...</div>
-    <div id="slot-container">
-      <div id="slot-numbers"></div>
-      <div class="slot-center-line"></div>
-    </div>
-    <button class="btn btn-primary" id="slotActionBtn" onclick="toggleSlot()">시작!</button>
+    <h3>💬 익명 자유게시판</h3>
+    <p style="font-size:12px; color:#666;">비속어 없는 클린한 공간을 만들어가요!</p>
+    <textarea id="postInput" placeholder="여기에 내용을 입력하세요..."></textarea>
+    <button class="btn btn-primary" onclick="addPost()">글 올리기</button>
+  </div>
+  <div id="postList"></div>
+</div>
+
+<div id="suggest" class="app-section">
+  <div class="card" style="cursor: default;">
+    <h3>💡 비밀 건의함</h3>
+    <p style="font-size:12px; color:#666;">작성된 내용은 선생님(또는 관리자)만 볼 수 있습니다.</p>
+    <textarea id="suggestInput" placeholder="우리 반을 위해 필요한 건의사항을 남겨주세요."></textarea>
+    <button class="btn btn-sub" onclick="addSuggest()">비밀리에 제출하기</button>
   </div>
   
-  <div class="card" style="cursor: default;">
-    <h3>🪑 자리표 (덮개 & 붙이기)</h3>
-    <p style="font-size:12px; color:#666; margin-bottom:15px;">* 드래그해서 위치 교체 / 터치로 고정(노란색)</p>
-    
-    <div class="controls-row">
-      <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-        <input type="checkbox" id="useCoverToggle" style="width: 16px; margin: 0;" checked> 
-        <span>섞을 때 덮개 씌우기</span>
-      </label>
-      <button onclick="toggleSeatLayout()" id="layoutBtn" style="padding: 6px 12px; border-radius: 5px; border: 1px solid #999; background: #fff; cursor: pointer; font-weight: bold;">책상 붙이기</button>
-    </div>
-    <div class="controls-row">
-      <button class="btn btn-sub" style="width: 48%; background:#757575; margin: 0;" onclick="toggleAllCovers()">모두 덮기/열기</button>
-      <button class="btn btn-sub" style="width: 48%; background:#673ab7; margin: 0;" onclick="startShuffle()">남은 자리 섞기</button>
-    </div>
-
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
-
-    <div class="blackboard">칠판 (앞)</div>
-    <div id="seat-map" class="seat-grid"></div>
+  <div class="admin-only">
+    <h4 style="margin-top: 20px; color: #f44336;">📩 수신된 건의사항 (관리자 전용)</h4>
+    <div id="suggestList"></div>
+  </div>
+  <div id="suggest-denied" style="text-align:center; padding:20px; color:#999; font-size:14px;" class="student-only">
+    제출된 건의사항은 관리자 계정으로 로그인해야 볼 수 있습니다.
   </div>
 </div>
 
-<div id="board" class="app-section"><div class="card">준비 중...</div></div>
+<div id="lunch" class="app-section">
+  <div class="card" id="lunch-display" style="cursor: default; font-size: 16px; line-height: 1.6;">
+    급식 데이터를 불러오는 중...
+  </div>
+</div>
 
-<script>
-// --- 공통 기능 ---
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// 선생님의 기존 Firebase 설정 유지
+const firebaseConfig = {
+  apiKey: "AIzaSyBWku20Zf1Mn0mvdkCId2HnIsd1WDu3e9I",
+  authDomain: "schoolproject-10903-34016.firebaseapp.com",
+  databaseURL: "https://schoolproject-10903-34016-default-rtdb.firebaseio.com/",
+  projectId: "schoolproject-10903-34016",
+  storageBucket: "schoolproject-10903-34016.firebasestorage.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// --- 권한 관리 (비밀번호: 1234) ---
+const PWD = "1234";
+window.handleAdmin = () => {
+  if(document.body.classList.contains('is-admin')) {
+    document.body.classList.remove('is-admin');
+    document.getElementById('adminLock').innerText = "🔒 로그인";
+    document.querySelectorAll('.student-only').forEach(el => el.style.display = 'block');
+  } else {
+    if(prompt("관리자 비밀번호를 입력하세요") === PWD) {
+      document.body.classList.add('is-admin');
+      document.getElementById('adminLock').innerText = "🔓 관리자";
+      document.querySelectorAll('.student-only').forEach(el => el.style.display = 'none');
+    } else {
+      alert("비밀번호가 틀렸습니다.");
+    }
+  }
+};
+
+// --- 공통: 탭 전환 기능 ---
 window.switchTab = (id, btn) => {
   document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -120,176 +149,93 @@ window.switchTab = (id, btn) => {
   if(btn) btn.classList.add('active');
 };
 
-// --- 🎰 1. 가로 슬롯머신(스크롤 뽑기) 로직 ---
-const slotNumbersEl = document.getElementById('slot-numbers');
-const itemWidth = 60; 
-const NUM_ITEMS = 600; // 충분히 긴 트랙
-let items = [];
-let slotPos = 0;
-let slotSpeed = 0;
-let slotState = 'idle'; // idle, running, slowing
-
-function buildSlot() {
-  slotNumbersEl.innerHTML = '';
-  items = [];
-  let html = '';
-  for(let i=0; i<NUM_ITEMS; i++) {
-    let n = Math.floor(Math.random() * 32) + 1;
-    items.push(n);
-    html += `<div class="slot-item">${n}</div>`;
+// --- 💬 게시판 로직 ---
+window.addPost = () => {
+  const text = document.getElementById('postInput').value;
+  if(!text.trim()) {
+    alert("내용을 입력해주세요.");
+    return;
   }
-  slotNumbersEl.innerHTML = html;
+  push(ref(db, "posts"), { text, date: new Date().toLocaleString() });
+  document.getElementById('postInput').value = "";
+};
+
+onValue(ref(db, "posts"), (snap) => {
+  const list = document.getElementById('postList');
+  list.innerHTML = "";
+  snap.forEach(c => {
+    const item = c.val();
+    // 최신 글이 위로 오도록 추가
+    list.innerHTML = `<div class="list-item">
+      <div style="white-space: pre-wrap;">${item.text}</div>
+      <div class="list-date">${item.date}</div>
+      <button class="del-btn admin-only" onclick="deleteData('posts/${c.key}')" title="삭제">✖</button>
+    </div>` + list.innerHTML;
+  });
+});
+
+// --- 💡 건의함 로직 ---
+window.addSuggest = () => {
+  const text = document.getElementById('suggestInput').value;
+  if(!text.trim()) {
+    alert("건의사항을 입력해주세요.");
+    return;
+  }
+  push(ref(db, "suggestions"), { text, date: new Date().toLocaleString() });
+  document.getElementById('suggestInput').value = "";
+  alert("선생님께 건의사항이 비밀리에 전달되었습니다! 🤫");
+};
+
+onValue(ref(db, "suggestions"), (snap) => {
+  const list = document.getElementById('suggestList');
+  list.innerHTML = "";
+  snap.forEach(c => {
+    const item = c.val();
+    // 최신 글이 위로 오도록 추가
+    list.innerHTML = `<div class="list-item" style="border-left: 4px solid #ffc107;">
+      <div style="white-space: pre-wrap;">${item.text}</div>
+      <div class="list-date">${item.date}</div>
+      <button class="del-btn" onclick="deleteData('suggestions/${c.key}')" title="삭제">✖</button>
+    </div>` + list.innerHTML;
+  });
+});
+
+window.deleteData = (path) => {
+  if(confirm("정말로 삭제하시겠습니까?")) {
+    remove(ref(db, path));
+  }
+};
+
+// --- 🍱 급식 API 로딩 ---
+async function loadLunch() {
+  try {
+    // 새솔고등학교 코드 적용됨
+    const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const res = await fetch(`https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=J10&SD_SCHUL_CODE=7531106&MLSV_YMD=${today}`);
+    const data = await res.json();
+    
+    if(data.mealServiceDietInfo) {
+      // 알레르기 정보 숫자 제거 및 줄바꿈 처리
+      let menuStr = data.mealServiceDietInfo[1].row[0].DDISH_NM.replace(/[0-9\.\(\)]/g, '').split('<br/>').join(', ');
+      let fullMenuStr = data.mealServiceDietInfo[1].row[0].DDISH_NM.replace(/[0-9\.\(\)]/g, '').split('<br/>').join('<br><br>');
+      
+      document.getElementById('lunch-display').innerHTML = `<strong>오늘의 식단</strong><br><br>${fullMenuStr}`;
+      
+      // 홈 화면에는 짧게 표시
+      if(menuStr.length > 35) menuStr = menuStr.substring(0, 35) + "...";
+      document.getElementById('main-today-lunch').innerText = menuStr;
+    } else {
+      document.getElementById('lunch-display').innerText = "오늘은 급식 정보가 없습니다.";
+      document.getElementById('main-today-lunch').innerText = "오늘은 급식 정보가 없습니다.";
+    }
+  } catch(e) { 
+    console.error("급식 정보를 불러오는 중 오류 발생:", e);
+    document.getElementById('lunch-display').innerText = "급식 정보를 불러오는데 실패했습니다.";
+  }
 }
 
-window.toggleSlot = () => {
-  const btn = document.getElementById('slotActionBtn');
-  const display = document.getElementById('winner-display');
-  
-  if(slotState === 'idle') {
-    buildSlot();
-    slotPos = 0;
-    slotSpeed = 30; // 초기 이동 속도
-    slotState = 'running';
-    
-    btn.innerText = '🛑 멈춤!';
-    btn.className = 'btn btn-stop';
-    display.innerText = '돌아가는 중...';
-    display.style.color = '#333';
-    
-    loopSlot();
-  } else if(slotState === 'running') {
-    slotState = 'slowing';
-    btn.disabled = true;
-    btn.innerText = '감속 중...';
-  }
-};
-
-function loopSlot() {
-  const containerWidth = document.getElementById('slot-container').offsetWidth;
-  
-  if(slotState === 'running') {
-    slotPos += slotSpeed;
-  } else if (slotState === 'slowing') {
-    slotSpeed *= 0.97; // 마찰력 (숫자가 클수록 늦게 멈춤)
-    slotPos += slotSpeed;
-    
-    if(slotSpeed < 0.6) {
-      // 속도가 거의 줄면 가장 가까운 숫자에 스냅(정렬)
-      let centerOffset = containerWidth / 2;
-      let currentCenterTrackX = slotPos + centerOffset;
-      let targetIndex = Math.round((currentCenterTrackX - itemWidth/2) / itemWidth);
-      
-      if(targetIndex < 0) targetIndex = 0;
-      if(targetIndex >= NUM_ITEMS) targetIndex = NUM_ITEMS - 1;
-      
-      slotPos = (targetIndex * itemWidth) + (itemWidth / 2) - centerOffset; // 정확한 위치 보정
-      
-      slotState = 'idle';
-      let btn = document.getElementById('slotActionBtn');
-      btn.innerText = '다시 시작!';
-      btn.disabled = false;
-      btn.className = 'btn btn-primary';
-      
-      const display = document.getElementById('winner-display');
-      display.innerText = `🎉 ${items[targetIndex]}번 당첨! 🎉`;
-      display.style.color = '#e91e63';
-    }
-  }
-  
-  slotNumbersEl.style.transform = `translateX(-${slotPos}px)`;
-  if(slotState !== 'idle') requestAnimationFrame(loopSlot);
-}
-
-
-// --- 🪑 2. 자리 배치도 로직 (덮개, 붙이기/띄우기, 드래그) ---
-let seats = Array.from({length: 32}, (_, i) => i + 1);
-let locked = new Array(32).fill(false);
-let covered = new Array(32).fill(false);
-let draggedIdx = null;
-
-// 책상 붙이기/띄우기 토글
-let isAttached = false;
-window.toggleSeatLayout = () => {
-  isAttached = !isAttached;
-  const grid = document.getElementById('seat-map');
-  const btn = document.getElementById('layoutBtn');
-  
-  if(isAttached) {
-    grid.classList.add('attached-mode');
-    btn.innerText = '책상 띄우기';
-    btn.style.background = '#e8f5e9';
-  } else {
-    grid.classList.remove('attached-mode');
-    btn.innerText = '책상 붙이기';
-    btn.style.background = '#fff';
-  }
-};
-
-window.toggleAllCovers = () => {
-  const isAnyCovered = covered.some(v => v);
-  covered.fill(!isAnyCovered);
-  renderSeats();
-};
-
-window.handleSeatClick = (idx) => {
-  if (covered[idx]) {
-    covered[idx] = false; // 덮여있으면 열기
-  } else {
-    locked[idx] = !locked[idx]; // 열려있으면 고정 토글
-  }
-  renderSeats();
-};
-
-// 드래그 앤 드롭
-window.dragStart = (e, idx) => { draggedIdx = idx; };
-window.dragOver = (e, idx) => { e.preventDefault(); document.getElementById(`seat-${idx}`).classList.add('drag-over'); };
-window.dragLeave = (e, idx) => { document.getElementById(`seat-${idx}`).classList.remove('drag-over'); };
-window.drop = (e, targetIdx) => {
-  e.preventDefault();
-  document.getElementById(`seat-${targetIdx}`).classList.remove('drag-over');
-  if (draggedIdx !== null && draggedIdx !== targetIdx) {
-    [seats[draggedIdx], seats[targetIdx]] = [seats[targetIdx], seats[draggedIdx]];
-    [locked[draggedIdx], locked[targetIdx]] = [locked[targetIdx], locked[draggedIdx]];
-    [covered[draggedIdx], covered[targetIdx]] = [covered[targetIdx], covered[draggedIdx]];
-    renderSeats();
-  }
-  draggedIdx = null;
-};
-
-window.renderSeats = () => {
-  const map = document.getElementById('seat-map');
-  map.innerHTML = seats.map((num, i) => `
-    <div id="seat-${i}" 
-         class="seat ${covered[i] ? 'covered' : ''} ${locked[i] ? 'locked' : ''}" 
-         draggable="true" 
-         onclick="handleSeatClick(${i})"
-         ondragstart="dragStart(event, ${i})"
-         ondragover="dragOver(event, ${i})"
-         ondragleave="dragLeave(event, ${i})"
-         ondrop="drop(event, ${i})">
-      <span style="visibility: ${covered[i] ? 'hidden' : 'visible'}">${num}번</span>
-    </div>
-  `).join('');
-};
-
-window.startShuffle = () => {
-  const useCover = document.getElementById('useCoverToggle').checked; // 체크박스 확인
-  
-  let finalUnlocked = seats.filter((_, i) => !locked[i]);
-  finalUnlocked.sort(() => Math.random() - 0.5);
-  
-  let fIdx = 0;
-  for(let i=0; i<32; i++) {
-    if(!locked[i]) {
-      seats[i] = finalUnlocked[fIdx++];
-      covered[i] = useCover; // 체크되어 있을 때만 덮개 적용
-    }
-  }
-  renderSeats();
-};
-
-buildSlot(); // 슬롯 초기화
-renderSeats(); // 자리 초기화
+// 실행
+loadLunch();
 </script>
 </body>
 </html>
