@@ -25,4 +25,307 @@
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* 카드 및 버튼 */
-  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; cursor
+  .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; cursor: pointer; transition: 0.2s; }
+  .card:active { transform: scale(0.98); }
+  .card h3 { margin: 0 0 8px 0; font-size: 18px; }
+  .card p { margin: 0; color: #666; font-size: 13px; line-height: 1.4; }
+  input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+  .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; margin-bottom: 10px; transition: 0.2s; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--primary); }
+  .btn-sub { background: #2196F3; }
+
+  /* 🎲 룰렛 & 자리 스타일 (대폭 업그레이드) */
+  #pick-res { font-size: 55px; font-weight: bold; text-align: center; color: var(--primary); margin: 20px 0; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s; }
+  .seat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px; }
+  .seat { background: #fff; border: 2px solid #ddd; padding: 12px 0; text-align: center; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; user-select: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+  .seat:active { transform: scale(0.9); }
+  .seat.locked { background: #ffeb3b; border-color: #f57f17; color: #d84315; box-shadow: inset 0 0 10px rgba(255,152,0,0.3); } /* 고정된 자리 효과 */
+  .seat.shuffling { background: #eee; color: #aaa; border-color: #eee; } /* 섞이는 중 효과 */
+  .blackboard { width: 60%; margin: 0 auto 15px; background: #333; color: white; text-align: center; padding: 8px; border-radius: 5px; font-size: 14px; font-weight: bold; box-shadow: 0 4px 0 #111; }
+
+  /* 💬 게시판 & 건의함 리스트 */
+  .list-item { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative; }
+  .list-date { font-size: 11px; color: #999; margin-top: 5px; }
+  .admin-only { display: none; }
+  body.is-admin .admin-only { display: block; }
+  .del-btn { position: absolute; right: 10px; top: 10px; color: #ccc; cursor: pointer; border: none; background: none; }
+</style>
+</head>
+<body id="mainBody">
+
+<div class="header">
+  <div class="home-icon" onclick="document.querySelectorAll('.tab-btn')[0].click()">🏫 1-9</div>
+  스마트 보드
+  <div class="admin-btn" id="adminLock" onclick="handleAdmin()">🔒 로그인</div>
+</div>
+
+<div class="tab-menu" id="tabBar">
+  <button class="tab-btn active" onclick="switchTab('home', this)">🏠 홈</button>
+  <button class="tab-btn" onclick="switchTab('roulette', this)">🎲 룰렛/자리</button>
+  <button class="tab-btn" onclick="switchTab('board', this)">💬 익명게판</button>
+  <button class="tab-btn" onclick="switchTab('suggest', this)">💡 건의함</button>
+  <button class="tab-btn" onclick="switchTab('lunch', this)">🍱 급식</button>
+</div>
+
+<div id="home" class="app-section active">
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[4].click()">
+    <h3>🍱 오늘의 급식</h3>
+    <p id="main-today-lunch">급식 데이터를 불러오는 중...</p>
+  </div>
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[1].click()">
+    <h3>🎲 룰렛 & 자리 바꾸기</h3>
+    <p>오늘의 당번이나 새로운 자리를 뽑아보세요.</p>
+  </div>
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[2].click()">
+    <h3>💬 익명 자유게시판</h3>
+    <p>친구들과 자유롭게 이야기를 나누세요.</p>
+  </div>
+  <div class="card" onclick="document.querySelectorAll('.tab-btn')[3].click()">
+    <h3>💡 건의사항 남기기</h3>
+    <p>우리 반을 위한 좋은 아이디어를 비밀리에 전달하세요.</p>
+  </div>
+</div>
+
+<div id="roulette" class="app-section">
+  <div class="card" style="cursor: default;">
+    <h3>🎲 번호 뽑기 (1~32)</h3>
+    <p style="font-size:12px; color:#666;">숨막히는 추첨! 과연 오늘의 당첨자는?</p>
+    <div id="pick-res">?</div>
+    <button class="btn btn-primary" id="drawBtn" onclick="drawNumber()">추첨 시작</button>
+  </div>
+  
+  <div class="card" style="cursor: default;">
+    <h3>🪑 과학사랑 자리 바꾸기</h3>
+    <p style="font-size:12px; color:#e91e63; margin-bottom:15px;">* 자리를 터치하면 노란색으로 <b>고정(Lock)</b>됩니다. 고정된 자리는 섞이지 않습니다!</p>
+    <div class="blackboard">칠판 (교탁)</div>
+    <div id="seat-map" class="seat-grid"></div>
+    <button class="btn btn-sub" id="shuffleBtn" style="margin-top:15px; background-color:#673ab7;" onclick="startShuffle()">자리 섞기</button>
+  </div>
+</div>
+
+<div id="board" class="app-section">
+  <div class="card" style="cursor: default;">
+    <textarea id="postInput" placeholder="비속어 없는 클린한 게시판을 만들어요!"></textarea>
+    <button class="btn btn-primary" onclick="addPost()">글 올리기</button>
+  </div>
+  <div id="postList"></div>
+</div>
+
+<div id="suggest" class="app-section">
+  <div class="card" style="cursor: default;">
+    <h3>💡 건의사항 남기기</h3>
+    <p style="font-size:12px; color:#666;">작성된 내용은 관리자(선생님/반장)만 볼 수 있습니다.</p>
+    <textarea id="suggestInput" placeholder="우리 반을 위한 건의사항을 남겨주세요."></textarea>
+    <button class="btn btn-sub" onclick="addSuggest()">비밀리에 제출</button>
+  </div>
+  
+  <div class="admin-only">
+    <h4>📩 수신된 건의사항 (관리자 전용)</h4>
+    <div id="suggestList"></div>
+  </div>
+  <div id="suggest-denied" style="text-align:center; padding:20px; color:#999;" class="student-only">
+    관리자만 내용을 볼 수 있습니다.
+  </div>
+</div>
+
+<div id="lunch" class="app-section">
+  <div class="card" id="lunch-display" style="cursor: default;">급식 데이터를 불러오는 중...</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBWku20Zf1Mn0mvdkCId2HnIsd1WDu3e9I",
+  authDomain: "schoolproject-10903-34016.firebaseapp.com",
+  databaseURL: "https://schoolproject-10903-34016-default-rtdb.firebaseio.com/",
+  projectId: "schoolproject-10903-34016",
+  storageBucket: "schoolproject-10903-34016.firebasestorage.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// --- 권한 관리 ---
+const PWD = "1234";
+window.handleAdmin = () => {
+  if(document.body.classList.contains('is-admin')) {
+    document.body.classList.remove('is-admin');
+    document.getElementById('adminLock').innerText = "🔒 로그인";
+    document.querySelectorAll('.student-only').forEach(el => el.style.display = 'block');
+  } else {
+    if(prompt("관리자 비밀번호를 입력하세요") === PWD) {
+      document.body.classList.add('is-admin');
+      document.getElementById('adminLock').innerText = "🔓 관리자";
+      document.querySelectorAll('.student-only').forEach(el => el.style.display = 'none');
+    }
+  }
+};
+
+// --- 공통 기능 ---
+window.switchTab = (id, btn) => {
+  document.querySelectorAll('.app-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+};
+
+// --- 🎲 1. 긴장감 넘치는 번호 뽑기 ---
+window.drawNumber = () => {
+  const res = document.getElementById('pick-res');
+  const btn = document.getElementById('drawBtn');
+  btn.disabled = true;
+  
+  let delay = 20; // 초기 속도 (매우 빠름)
+  let count = 0;
+  const maxCount = 25; // 총 깜빡임 횟수
+  
+  // 스타일 초기화
+  res.style.transform = "scale(1)";
+  res.style.color = "var(--primary)";
+
+  const draw = () => {
+    res.innerText = Math.floor(Math.random() * 32) + 1;
+    count++;
+    
+    if (count < maxCount) {
+      delay += 12; // 횟수가 지날수록 딜레이를 늘려 마찰력 효과 생성
+      setTimeout(draw, delay);
+    } else {
+      // 뽑기 완료 시 줌인 이펙트!
+      res.style.color = "#ff4b2b";
+      res.style.transform = "scale(1.4)";
+      btn.disabled = false;
+    }
+  };
+  draw();
+};
+
+// --- 🪑 2. 과학사랑 스타일 자리 바꾸기 (고정 기능) ---
+let seats = Array.from({length: 32}, (_, i) => i + 1);
+let locked = new Array(32).fill(false); // 자리 고정 여부 저장 배열
+
+window.toggleLock = (index) => {
+  locked[index] = !locked[index]; // 클릭 시 고정/해제 토글
+  renderSeats();
+};
+
+window.renderSeats = () => {
+  const map = document.getElementById('seat-map');
+  map.innerHTML = seats.map((num, i) => `
+    <div class="seat ${locked[i] ? 'locked' : ''}" onclick="toggleLock(${i})">
+      ${num}번
+    </div>
+  `).join('');
+};
+
+window.startShuffle = () => {
+  let count = 0;
+  const btn = document.getElementById('shuffleBtn');
+  btn.disabled = true;
+  btn.innerText = "마구 섞는 중...";
+
+  // 시각적 섞임 애니메이션
+  const timer = setInterval(() => {
+    // 고정되지 않은 번호들만 추출해서 임시로 섞기
+    let tempUnlocked = seats.filter((_, i) => !locked[i]);
+    tempUnlocked.sort(() => Math.random() - 0.5);
+    
+    let uIdx = 0;
+    const tempSeats = seats.map((num, i) => locked[i] ? num : tempUnlocked[uIdx++]);
+    
+    const map = document.getElementById('seat-map');
+    map.innerHTML = tempSeats.map((n, i) => `
+      <div class="seat ${locked[i] ? 'locked' : 'shuffling'}">
+        ${n}번
+      </div>
+    `).join('');
+    
+    count++;
+    if(count > 15) { // 15번 애니메이션 후 최종 결정
+      clearInterval(timer);
+      
+      let finalUnlocked = seats.filter((_, i) => !locked[i]);
+      finalUnlocked.sort(() => Math.random() - 0.5);
+      
+      let fIdx = 0;
+      for(let i=0; i<32; i++) {
+        if(!locked[i]) seats[i] = finalUnlocked[fIdx++];
+      }
+      renderSeats();
+      btn.disabled = false;
+      btn.innerText = "자리 섞기";
+    }
+  }, 80);
+};
+
+// --- 💬 게시판 & 건의함 로직 (기존 동일) ---
+window.addPost = () => {
+  const text = document.getElementById('postInput').value;
+  if(!text.trim()) return;
+  push(ref(db, "posts"), { text, date: new Date().toLocaleString() });
+  document.getElementById('postInput').value = "";
+};
+
+onValue(ref(db, "posts"), (snap) => {
+  const list = document.getElementById('postList');
+  list.innerHTML = "";
+  snap.forEach(c => {
+    const item = c.val();
+    list.innerHTML = `<div class="list-item">
+      <div>${item.text}</div>
+      <div class="list-date">${item.date}</div>
+      <button class="del-btn admin-only" onclick="deleteData('posts/${c.key}')">✖</button>
+    </div>` + list.innerHTML;
+  });
+});
+
+window.addSuggest = () => {
+  const text = document.getElementById('suggestInput').value;
+  if(!text.trim()) return;
+  push(ref(db, "suggestions"), { text, date: new Date().toLocaleString() });
+  document.getElementById('suggestInput').value = "";
+  alert("관리자에게 소중한 의견이 전달되었습니다.");
+};
+
+onValue(ref(db, "suggestions"), (snap) => {
+  const list = document.getElementById('suggestList');
+  list.innerHTML = "";
+  snap.forEach(c => {
+    const item = c.val();
+    list.innerHTML = `<div class="list-item" style="border-left: 4px solid #ffc107;">
+      <div>${item.text}</div>
+      <div class="list-date">${item.date}</div>
+      <button class="del-btn" onclick="deleteData('suggestions/${c.key}')">✖</button>
+    </div>` + list.innerHTML;
+  });
+});
+
+window.deleteData = (path) => {
+  if(confirm("삭제하시겠습니까?")) remove(ref(db, path));
+};
+
+// --- 급식 로딩 ---
+async function loadLunch() {
+  try {
+    const res = await fetch(`https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&ATPT_OFCDC_SC_CODE=J10&SD_SCHUL_CODE=7531106&MLSV_YMD=${new Date().toISOString().slice(0,10).replace(/-/g,'')}`);
+    const data = await res.json();
+    if(data.mealServiceDietInfo) {
+      let menuStr = data.mealServiceDietInfo[1].row[0].DDISH_NM.replace(/[0-9\.]/g, '').split('<br/>').join(', ');
+      document.getElementById('lunch-display').innerHTML = menuStr;
+      if(menuStr.length > 35) menuStr = menuStr.substring(0, 35) + "...";
+      document.getElementById('main-today-lunch').innerText = menuStr;
+    } else {
+      document.getElementById('lunch-display').innerText = "오늘은 급식 정보가 없습니다.";
+      document.getElementById('main-today-lunch').innerText = "오늘은 급식 정보가 없습니다.";
+    }
+  } catch(e) { }
+}
+
+loadLunch();
+renderSeats(); // 최초 자리 렌더링 호출 (초기화)
+</script>
+</body>
+</html>
